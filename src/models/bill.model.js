@@ -23,6 +23,14 @@ const Bill = sequelize.define('Bill', {
     allowNull: true,
     references: { model: 'customers', key: 'id' },
   },
+  customer_name: {
+    type: DataTypes.STRING(150),
+    allowNull: true,
+  },
+  customer_phone: {
+    type: DataTypes.STRING(20),
+    allowNull: true,
+  },
   total_amount: {
     type: DataTypes.DECIMAL(14, 2),
     allowNull: false,
@@ -38,7 +46,22 @@ const Bill = sequelize.define('Bill', {
     allowNull: false,
     defaultValue: 0,
   },
+  discount_percent: {
+    type: DataTypes.DECIMAL(5, 2),
+    allowNull: false,
+    defaultValue: 0,
+  },
   final_amount: {
+    type: DataTypes.DECIMAL(14, 2),
+    allowNull: false,
+    defaultValue: 0,
+  },
+  grand_total: {
+    type: DataTypes.DECIMAL(14, 2),
+    allowNull: false,
+    defaultValue: 0,
+  },
+  cash_received: {
     type: DataTypes.DECIMAL(14, 2),
     allowNull: false,
     defaultValue: 0,

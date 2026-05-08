@@ -14,6 +14,7 @@ const loginSchema = Joi.object({
 const createUserSchema = Joi.object({
   name: Joi.string().min(2).max(150).required(),
   email: Joi.string().email().required(),
+  phone: Joi.string().allow('', null).max(20).optional(),
   password: Joi.string().min(6).max(128).required(),
   role: Joi.string().valid('ADMIN', 'STAFF').required(),
   store_id: Joi.number().integer().positive().required(),

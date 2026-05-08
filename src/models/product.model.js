@@ -16,7 +16,11 @@ const Product = sequelize.define('Product', {
     type: DataTypes.STRING(200),
     allowNull: false,
   },
-  category: {
+  barcode: {
+    type: DataTypes.STRING(100),
+    allowNull: true,
+  },
+  sku: {
     type: DataTypes.STRING(100),
     allowNull: true,
   },
@@ -24,7 +28,11 @@ const Product = sequelize.define('Product', {
     type: DataTypes.STRING(100),
     allowNull: true,
   },
-  purchase_price: {
+  category: {
+    type: DataTypes.STRING(100),
+    allowNull: true,
+  },
+  buying_price: {
     type: DataTypes.DECIMAL(12, 2),
     allowNull: false,
     defaultValue: 0,
@@ -49,12 +57,28 @@ const Product = sequelize.define('Product', {
     allowNull: false,
     defaultValue: 5,
   },
-  barcode: {
-    type: DataTypes.STRING(100),
-    allowNull: true,
-    unique: true,
+  status: {
+    type: DataTypes.ENUM('ACTIVE', 'INACTIVE'),
+    allowNull: false,
+    defaultValue: 'ACTIVE',
   },
   barcode_image_url: {
+    type: DataTypes.STRING(500),
+    allowNull: true,
+  },
+  fabric: {
+    type: DataTypes.STRING(100),
+    allowNull: true,
+  },
+  color: {
+    type: DataTypes.STRING(100),
+    allowNull: true,
+  },
+  gender: {
+    type: DataTypes.STRING(50),
+    allowNull: true,
+  },
+  image_url: {
     type: DataTypes.STRING(500),
     allowNull: true,
   },
@@ -65,9 +89,11 @@ const Product = sequelize.define('Product', {
 }, {
   tableName: 'products',
   indexes: [
-    { fields: ['store_id'] },
-    { unique: true, fields: ['barcode'] },
-    { fields: ['category'] },
+    { name: 'products_store_id_idx', fields: ['store_id'] },
+    { name: 'products_store_barcode_unique', unique: true, fields: ['store_id', 'barcode'] },
+    { name: 'products_store_sku_unique', unique: true, fields: ['store_id', 'sku'] },
+    { name: 'products_category_idx', fields: ['category'] },
+    { name: 'products_status_idx', fields: ['status'] },
   ],
 });
 

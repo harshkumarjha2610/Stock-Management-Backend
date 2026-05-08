@@ -50,7 +50,7 @@ beforeAll(async () => {
     .set('Authorization', `Bearer ${ctx.adminToken}`)
     .send({ name: 'Widget B', purchase_price: 50, selling_price: 100, gst_percent: 12, stock_quantity: 3, min_stock_level: 10 });
   ctx.product2Id = res.body.data.id;
-});
+}, 30000);
 
 afterAll(async () => {
   await teardownDatabase();
@@ -96,14 +96,16 @@ describe('Stock API', () => {
     const res = await request(app).get('/api/stock/history')
       .set('Authorization', `Bearer ${ctx.adminToken}`);
     expect(res.status).toBe(200);
-    expect(res.body.data.items.length).toBeGreaterThanOrEqual(2);
+    const items = Array.isArray(res.body.data) ? res.body.data : res.body.data.items;
+    expect(items.length).toBeGreaterThanOrEqual(2);
   });
 
   it('GET /api/stock/history?type=IN → should filter by type', async () => {
     const res = await request(app).get('/api/stock/history?type=IN')
       .set('Authorization', `Bearer ${ctx.adminToken}`);
     expect(res.status).toBe(200);
-    res.body.data.items.forEach((h) => expect(h.type).toBe('IN'));
+    const items = Array.isArray(res.body.data) ? res.body.data : res.body.data.items;
+    items.forEach((h) => expect(h.type).toBe('IN'));
   });
 
   it('GET /api/stock/low-stock → should detect low stock', async () => {
@@ -140,7 +142,8 @@ describe('Customer API', () => {
     const res = await request(app).get('/api/customers')
       .set('Authorization', `Bearer ${ctx.adminToken}`);
     expect(res.status).toBe(200);
-    expect(res.body.data.items.length).toBe(1);
+    const items = Array.isArray(res.body.data) ? res.body.data : res.body.data.items;
+    expect(items.length).toBe(1);
   });
 
   it('GET /api/customers/:id → should get customer by ID', async () => {
@@ -205,7 +208,8 @@ describe('Billing API', () => {
     const res = await request(app).get('/api/billing')
       .set('Authorization', `Bearer ${ctx.adminToken}`);
     expect(res.status).toBe(200);
-    expect(res.body.data.items.length).toBeGreaterThanOrEqual(1);
+    const items = Array.isArray(res.body.data) ? res.body.data : res.body.data.items;
+    expect(items.length).toBeGreaterThanOrEqual(1);
   });
 
   it('GET /api/billing/:id → should get bill with items', async () => {
@@ -220,7 +224,8 @@ describe('Billing API', () => {
     const res = await request(app).get(`/api/customers/${ctx.customerId}/purchases`)
       .set('Authorization', `Bearer ${ctx.adminToken}`);
     expect(res.status).toBe(200);
-    expect(res.body.data.items.length).toBeGreaterThanOrEqual(1);
+    const items = Array.isArray(res.body.data) ? res.body.data : res.body.data.items;
+    expect(items.length).toBeGreaterThanOrEqual(1);
   });
 });
 

@@ -70,9 +70,10 @@ describe('Multi-tenant Isolation', () => {
       .set('Authorization', `Bearer ${ctx.store1.adminToken}`);
     
     expect(res.status).toBe(200);
-    expect(res.body.data.items.length).toBe(1);
-    expect(res.body.data.items[0].name).toBe('S1 Product');
-    expect(res.body.data.items.find(p => p.id === ctx.store2.productId)).toBeUndefined();
+    const items = Array.isArray(res.body.data) ? res.body.data : res.body.data.items;
+    expect(items.length).toBe(1);
+    expect(items[0].name).toBe('S1 Product');
+    expect(items.find(p => p.id === ctx.store2.productId)).toBeUndefined();
   });
 
   it('Admin 1 should NOT be able to get Store 2 product by ID', async () => {
@@ -120,8 +121,9 @@ describe('Multi-tenant Isolation', () => {
       .set('Authorization', `Bearer ${ctx.superAdminToken}`);
     
     expect(res.status).toBe(200);
-    expect(res.body.data.items.length).toBe(1);
-    expect(res.body.data.items[0].name).toBe('S1 Product');
+    const items = Array.isArray(res.body.data) ? res.body.data : res.body.data.items;
+    expect(items.length).toBe(1);
+    expect(items[0].name).toBe('S1 Product');
   });
 
   it('Super Admin should FAIL if no store context is provided', async () => {

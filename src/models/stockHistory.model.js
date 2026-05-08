@@ -38,6 +38,10 @@ const StockHistory = sequelize.define('StockHistory', {
     type: DataTypes.STRING(200),
     allowNull: true,
   },
+  note: {
+    type: DataTypes.STRING(500),
+    allowNull: true,
+  },
 }, {
   tableName: 'stock_history',
   indexes: [

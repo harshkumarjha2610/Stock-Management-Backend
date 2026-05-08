@@ -24,8 +24,20 @@ const Store = sequelize.define('Store', {
     type: DataTypes.STRING(20),
     allowNull: true,
   },
-  address: {
+    address: {
     type: DataTypes.TEXT,
+    allowNull: true,
+  },
+  category: {
+    type: DataTypes.ENUM('GROCERY', 'GARMENTS'),
+    defaultValue: 'GROCERY',
+  },
+  logo_url: {
+    type: DataTypes.TEXT,
+    allowNull: true,
+  },
+  upi_id: {
+    type: DataTypes.STRING(150),
     allowNull: true,
   },
 }, {

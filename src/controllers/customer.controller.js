@@ -17,9 +17,19 @@ const getCustomerById = catchAsync(async (req, res) => {
   sendSuccess(res, customer, 'Customer retrieved successfully.');
 });
 
+const updateCustomer = catchAsync(async (req, res) => {
+  const customer = await customerService.updateCustomer(req.params.id, req.body, req.storeId);
+  sendSuccess(res, customer, 'Customer updated successfully.');
+});
+
+const deleteCustomer = catchAsync(async (req, res) => {
+  const result = await customerService.deleteCustomer(req.params.id, req.storeId);
+  sendSuccess(res, result, 'Customer deleted successfully.');
+});
+
 const getPurchaseHistory = catchAsync(async (req, res) => {
   const result = await customerService.getPurchaseHistory(req.params.id, req.storeId, req.query);
   sendSuccess(res, result, 'Purchase history retrieved.');
 });
 
-module.exports = { createCustomer, getCustomers, getCustomerById, getPurchaseHistory };
+module.exports = { createCustomer, getCustomers, getCustomerById, updateCustomer, deleteCustomer, getPurchaseHistory };

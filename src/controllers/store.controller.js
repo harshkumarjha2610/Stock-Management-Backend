@@ -8,7 +8,9 @@ const createStore = catchAsync(async (req, res) => {
 });
 
 const getAllStores = catchAsync(async (req, res) => {
-  const stores = await storeService.getAllStores();
+  // If storeId is provided (e.g. by storeAccessGuard for ADMINs), filter by it.
+  const filter = req.storeId ? { id: req.storeId } : {};
+  const stores = await storeService.getAllStores(filter);
   sendSuccess(res, stores, 'Stores retrieved successfully.');
 });
 
@@ -17,4 +19,14 @@ const getStoreById = catchAsync(async (req, res) => {
   sendSuccess(res, store, 'Store retrieved successfully.');
 });
 
-module.exports = { createStore, getAllStores, getStoreById };
+const updateStore = catchAsync(async (req, res) => {
+  const store = await storeService.updateStore(req.params.id, req.body);
+  sendSuccess(res, store, 'Store updated successfully.');
+});
+
+const deleteStore = catchAsync(async (req, res) => {
+  const result = await storeService.deleteStore(req.params.id);
+  sendSuccess(res, result, 'Store deleted successfully.');
+});
+
+module.exports = { createStore, getAllStores, getStoreById, updateStore, deleteStore };

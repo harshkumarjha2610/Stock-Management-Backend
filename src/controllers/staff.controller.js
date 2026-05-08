@@ -32,4 +32,19 @@ const getAttendance = catchAsync(async (req, res) => {
   sendSuccess(res, records, 'Attendance records retrieved.');
 });
 
-module.exports = { createStaff, getStaff, getStaffById, checkIn, checkOut, getAttendance };
+const getAllAttendance = catchAsync(async (req, res) => {
+  const records = await staffService.getAllAttendance(req.storeId, req.query);
+  sendSuccess(res, records, 'All attendance records retrieved.');
+});
+
+const updateStaff = catchAsync(async (req, res) => {
+  const staff = await staffService.updateStaff(req.params.id, req.body, req.storeId);
+  sendSuccess(res, staff, 'Staff member updated successfully.');
+});
+
+const deleteStaff = catchAsync(async (req, res) => {
+  const result = await staffService.deleteStaff(req.params.id, req.storeId);
+  sendSuccess(res, result, 'Staff member deleted successfully.');
+});
+
+module.exports = { createStaff, getStaff, getStaffById, updateStaff, deleteStaff, checkIn, checkOut, getAttendance, getAllAttendance };

@@ -12,6 +12,8 @@ router.use(storeAccessGuard);
 router.post('/', validate(createCustomerSchema), ctrl.createCustomer);
 router.get('/', ctrl.getCustomers);
 router.get('/:id', ctrl.getCustomerById);
+router.put('/:id', ctrl.updateCustomer);
+router.delete('/:id', ctrl.deleteCustomer);
 router.get('/:id/purchases', ctrl.getPurchaseHistory);
 
 module.exports = router;

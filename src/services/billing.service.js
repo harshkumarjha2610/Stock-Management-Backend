@@ -23,28 +23,60 @@ const createBill = async (data, storeId) => {
         throw new AppError(`Insufficient stock for "${p.name}". Available: ${p.stock_quantity}`, 400);
     }
 
-    let totalAmount = 0, totalGST = 0;
+    let totalAmount = 0;
+    let totalGST = 0;
+    let totalDiscount = 0;
+
     const itemsData = data.items.map((item) => {
       const p = pMap[item.product_id];
       const price = parseFloat(p.selling_price);
+      const buyingPrice = parseFloat(p.buying_price);
       const gstPct = parseFloat(p.gst_percent);
+      const itemDiscount = parseFloat(item.discount) || 0;
+      
       const sub = price * item.quantity;
-      const gst = (sub * gstPct) / 100;
+      const taxable = (price - itemDiscount) * item.quantity;
+      const gst = (taxable * gstPct) / 100;
+      
       totalAmount += sub;
       totalGST += gst;
-      return { product_id: item.product_id, quantity: item.quantity, price, gst_percent: gstPct,
-        gst_amount: Math.round(gst * 100) / 100, total_amount: Math.round((sub + gst) * 100) / 100 };
+      totalDiscount += (itemDiscount * item.quantity);
+ 
+      return {
+        product_id: item.product_id,
+        size: item.size || null,
+        quantity: item.quantity,
+        purchase_price: buyingPrice,
+        price,
+        discount: itemDiscount,
+        gst_percent: gstPct,
+        gst_amount: Math.round(gst * 100) / 100,
+        total_amount: Math.round((taxable + gst) * 100) / 100
+      };
     });
 
-    const discount = parseFloat(data.discount) || 0;
-    const finalAmount = Math.round((totalAmount + totalGST - discount) * 100) / 100;
+    const billDiscountPercent = parseFloat(data.discount_percent) || 0;
+    const billDiscountAmount = Math.round((totalAmount - totalDiscount) * (billDiscountPercent / 100) * 100) / 100;
+    totalDiscount += billDiscountAmount;
+
+    const finalAmount = Math.round((totalAmount + totalGST - totalDiscount) * 100) / 100;
     const invoiceNumber = `INV-${storeId}-${Date.now()}-${uuidv4().slice(0, 4).toUpperCase()}`;
 
     const bill = await Bill.create({
-      store_id: storeId, invoice_number: invoiceNumber, customer_id: data.customer_id || null,
-      total_amount: Math.round(totalAmount * 100) / 100, gst_amount: Math.round(totalGST * 100) / 100,
-      discount, final_amount: finalAmount, payment_method: data.payment_method || 'CASH',
-      paid_status: data.paid_status || 'PAID',
+      store_id: storeId,
+      invoice_number: invoiceNumber,
+      customer_id: data.customer_id || null,
+      customer_name: data.customer_name || null,
+      customer_phone: data.customer_phone || null,
+      total_amount: Math.round(totalAmount * 100) / 100,
+      gst_amount: Math.round(totalGST * 100) / 100,
+      discount: Math.round(totalDiscount * 100) / 100,
+      discount_percent: billDiscountPercent,
+      final_amount: finalAmount,
+      grand_total: finalAmount,
+      cash_received: parseFloat(data.cash_received) || 0,
+      payment_method: (data.payment_method || 'CASH').toUpperCase().replace(' ', '_'),
+      paid_status: (data.paid_status || 'PAID').toUpperCase(),
     }, { transaction });
 
     await BillItem.bulkCreate(itemsData.map((i) => ({ ...i, bill_id: bill.id })), { transaction });
@@ -54,15 +86,24 @@ const createBill = async (data, storeId) => {
     }
 
     if (data.customer_id) {
-      await Customer.increment('total_purchase_amount', { by: finalAmount, where: { id: data.customer_id, store_id: storeId }, transaction });
+      await Customer.update({
+        total_spent: sequelize.literal(`total_spent + ${finalAmount}`),
+        total_orders: sequelize.literal(`total_orders + 1`),
+        last_purchase: new Date(),
+      }, { where: { id: data.customer_id, store_id: storeId }, transaction });
     }
 
     await transaction.commit();
     return await Bill.findByPk(bill.id, {
-      include: [{ association: 'items', include: [{ association: 'product', attributes: ['id', 'name', 'barcode'] }] },
-        { association: 'customer', attributes: ['id', 'name', 'phone'] }],
+      include: [
+        { association: 'items', include: [{ association: 'product', attributes: ['id', 'name', 'barcode'] }] },
+        { association: 'customer', attributes: ['id', 'name', 'phone'] }
+      ],
     });
-  } catch (err) { await transaction.rollback(); throw err; }
+  } catch (err) {
+    await transaction.rollback();
+    throw err;
+  }
 };
 
 const getBillById = async (id, storeId) => {
@@ -87,6 +128,10 @@ const getBills = async (storeId, query) => {
   const { rows, count } = await Bill.findAndCountAll({ where,
     include: [{ association: 'customer', attributes: ['id', 'name', 'phone'] }],
     order: [['created_at', 'DESC']], limit, offset });
+  
+  // If 'page' is not provided, the frontend likely expects the full array for reports/dropdowns
+  if (!query.page) return rows;
+
   return paginatedResponse(rows, count, page, limit);
 };
 

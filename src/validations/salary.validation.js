@@ -11,4 +11,10 @@ const createSalaryPaymentSchema = Joi.object({
   status: Joi.string().valid('PAID', 'PENDING').default('PAID'),
 });
 
-module.exports = { createSalaryPaymentSchema };
+const updateSalaryPaymentSchema = Joi.object({
+  payment_method: Joi.string().valid('CASH', 'UPI', 'CARD', 'BANK_TRANSFER', 'Bank Transfer', 'Cash', 'Upi', 'Card').allow(null, ''),
+  paid_date: Joi.date().iso().allow(null, ''),
+  status: Joi.string().valid('PAID', 'PENDING', 'Paid', 'Pending').default('PAID'),
+});
+
+module.exports = { createSalaryPaymentSchema, updateSalaryPaymentSchema };

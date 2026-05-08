@@ -22,14 +22,12 @@ const errorHandler = (err, req, res, next) => {
     message = 'Referenced record does not exist.';
   }
 
-  // Log full error in development
-  if (env.nodeEnv === 'development') {
-    console.error('❌ Error:', {
-      message: err.message,
-      stack: err.stack,
-      statusCode,
-    });
-  }
+  // Log full error
+  console.error('❌ Error:', {
+    message: err.message,
+    stack: err.stack,
+    statusCode,
+  });
 
   res.status(statusCode).json({
     success: false,

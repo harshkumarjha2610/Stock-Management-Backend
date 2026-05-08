@@ -9,6 +9,8 @@ const BillItem = require('./billItem.model');
 const Staff = require('./staff.model');
 const Attendance = require('./attendance.model');
 const SalaryPayment = require('./salaryPayment.model');
+const ProductSize = require('./productSize.model');
+
 
 // ──────────────────────────────────────────────
 // Store Associations
@@ -33,6 +35,13 @@ User.belongsTo(Store, { foreignKey: 'store_id', as: 'store' });
 Product.belongsTo(Store, { foreignKey: 'store_id', as: 'store' });
 Product.hasMany(StockHistory, { foreignKey: 'product_id', as: 'stockHistory' });
 Product.hasMany(BillItem, { foreignKey: 'product_id', as: 'billItems' });
+Product.hasMany(ProductSize, { foreignKey: 'product_id', as: 'sizes' });
+
+// ──────────────────────────────────────────────
+// ProductSize Associations
+// ──────────────────────────────────────────────
+ProductSize.belongsTo(Product, { foreignKey: 'product_id', as: 'product' });
+
 
 // ──────────────────────────────────────────────
 // StockHistory Associations
@@ -90,4 +99,5 @@ module.exports = {
   Staff,
   Attendance,
   SalaryPayment,
+  ProductSize,
 };

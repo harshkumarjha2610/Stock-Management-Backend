@@ -10,6 +10,8 @@ router.use(authorizeRoles(ROLES.SUPER_ADMIN, ROLES.ADMIN));
 router.use(storeAccessGuard);
 
 router.post('/', validate(createSalaryPaymentSchema), ctrl.createSalaryPayment);
+router.get('/', ctrl.getAllSalaries);
 router.get('/staff/:staffId', ctrl.getSalaryHistory);
+router.put('/:id', validate(require('../validations/salary.validation').updateSalaryPaymentSchema), ctrl.updateSalaryPayment);
 
 module.exports = router;

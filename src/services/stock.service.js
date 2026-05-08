@@ -42,6 +42,7 @@ const stockIn = async (data, storeId) => {
       purchase_price: data.purchase_price || product.purchase_price,
       reason: data.reason || 'Stock replenishment',
       supplier_name: data.supplier_name || null,
+      note: data.note || null,
     }, { transaction });
 
     await transaction.commit();
@@ -94,6 +95,7 @@ const stockOut = async (data, storeId) => {
       type: STOCK_TYPES.OUT,
       quantity: data.quantity,
       reason: data.reason || 'Manual stock out',
+      note: data.note || null,
     }, { transaction });
 
     await transaction.commit();
@@ -140,6 +142,9 @@ const getStockHistory = async (storeId, query) => {
     limit,
     offset,
   });
+
+  // If 'page' is not provided, the frontend likely expects the full array for reports
+  if (!query.page) return rows;
 
   return paginatedResponse(rows, count, page, limit);
 };

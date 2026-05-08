@@ -27,6 +27,7 @@ const createUser = async (data, creatorRole) => {
   const user = await User.create({
     name: data.name,
     email: data.email,
+    phone: data.phone || null,
     password_hash: data.password, // Will be hashed by beforeCreate hook
     role: data.role,
     store_id: data.store_id,

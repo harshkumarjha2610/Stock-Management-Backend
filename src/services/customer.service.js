@@ -3,7 +3,16 @@ const AppError = require('../utils/AppError');
 const { parsePagination, paginatedResponse } = require('../utils/pagination');
 
 const createCustomer = async (data, storeId) => {
-  const customer = await Customer.create({ ...data, store_id: storeId });
+  const customer = await Customer.create({
+    name: data.name,
+    phone: data.phone,
+    email: data.email,
+    address: data.address,
+    city: data.city,
+    status: data.status || 'active',
+    tag: data.tag || 'new',
+    store_id: storeId,
+  });
   return customer;
 };
 
@@ -14,6 +23,8 @@ const getCustomers = async (storeId, query = {}) => {
     order: [['created_at', 'DESC']],
     limit, offset,
   });
+  
+  if (!query.page) return rows;
   return paginatedResponse(rows, count, page, limit);
 };
 
@@ -21,6 +32,26 @@ const getCustomerById = async (id, storeId) => {
   const customer = await Customer.findOne({ where: { id, store_id: storeId } });
   if (!customer) throw new AppError('Customer not found.', 404);
   return customer;
+};
+
+const updateCustomer = async (id, data, storeId) => {
+  const customer = await getCustomerById(id, storeId);
+  await customer.update({
+    name: data.name,
+    phone: data.phone,
+    email: data.email,
+    address: data.address,
+    city: data.city,
+    status: data.status,
+    tag: data.tag,
+  });
+  return customer;
+};
+
+const deleteCustomer = async (id, storeId) => {
+  const customer = await getCustomerById(id, storeId);
+  await customer.destroy();
+  return { id };
 };
 
 const getPurchaseHistory = async (customerId, storeId, query = {}) => {
@@ -37,4 +68,4 @@ const getPurchaseHistory = async (customerId, storeId, query = {}) => {
   return paginatedResponse(rows, count, page, limit);
 };
 
-module.exports = { createCustomer, getCustomers, getCustomerById, getPurchaseHistory };
+module.exports = { createCustomer, getCustomers, getCustomerById, updateCustomer, deleteCustomer, getPurchaseHistory };

@@ -4,7 +4,18 @@ const dayjs = require('dayjs');
 const AppError = require('../utils/AppError');
 
 const createStaff = async (data, storeId) => {
-  const staff = await Staff.create({ ...data, store_id: storeId });
+  const staff = await Staff.create({
+    name: data.name,
+    phone: data.phone,
+    address: data.address,
+    aadhar_card: data.aadhar_card,
+    email_id: data.email_id,
+    photo_url: data.photo_url,
+    joining_date: data.joining_date,
+    base_salary: data.base_salary,
+    status: data.status ? data.status.toUpperCase() : 'ACTIVE',
+    store_id: storeId,
+  });
   return staff;
 };
 
@@ -16,6 +27,28 @@ const getStaffById = async (id, storeId) => {
   const staff = await Staff.findOne({ where: { id, store_id: storeId } });
   if (!staff) throw new AppError('Staff member not found.', 404);
   return staff;
+};
+
+const updateStaff = async (id, data, storeId) => {
+  const staff = await getStaffById(id, storeId);
+  await staff.update({
+    name: data.name,
+    phone: data.phone,
+    address: data.address,
+    aadhar_card: data.aadhar_card,
+    email_id: data.email_id,
+    photo_url: data.photo_url,
+    joining_date: data.joining_date,
+    base_salary: data.base_salary,
+    status: data.status ? data.status.toUpperCase() : staff.status,
+  });
+  return staff;
+};
+
+const deleteStaff = async (id, storeId) => {
+  const staff = await getStaffById(id, storeId);
+  await staff.destroy();
+  return { id };
 };
 
 /**
@@ -88,4 +121,21 @@ const getAttendance = async (staffId, storeId, query = {}) => {
   return Attendance.findAll({ where, order: [['date', 'DESC']] });
 };
 
-module.exports = { createStaff, getStaff, getStaffById, checkIn, checkOut, getAttendance };
+/**
+ * Get all attendance records for a store.
+ */
+const getAllAttendance = async (storeId, query = {}) => {
+  const where = { store_id: storeId };
+  if (query.from || query.to) {
+    where.date = {};
+    if (query.from) where.date[Op.gte] = query.from;
+    if (query.to) where.date[Op.lte] = query.to;
+  }
+  return Attendance.findAll({ 
+    where, 
+    include: [{ association: 'staff', attributes: ['name'] }],
+    order: [['date', 'DESC']] 
+  });
+};
+
+module.exports = { createStaff, getStaff, getStaffById, updateStaff, deleteStaff, checkIn, checkOut, getAttendance, getAllAttendance };

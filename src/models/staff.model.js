@@ -24,7 +24,19 @@ const Staff = sequelize.define('Staff', {
     type: DataTypes.TEXT,
     allowNull: true,
   },
-  salary: {
+  aadhar_card: {
+    type: DataTypes.STRING(20),
+    allowNull: true,
+  },
+  email_id: {
+    type: DataTypes.STRING(150),
+    allowNull: true,
+  },
+  photo_url: {
+    type: DataTypes.TEXT,
+    allowNull: true,
+  },
+  base_salary: {
     type: DataTypes.DECIMAL(12, 2),
     allowNull: false,
     defaultValue: 0,

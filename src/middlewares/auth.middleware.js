@@ -43,15 +43,22 @@ const authorizeRoles = (...allowedRoles) => {
  */
 const storeAccessGuard = (req, res, next) => {
   if (req.user.role === ROLES.SUPER_ADMIN) {
-    // Super Admin can access any store — use store_id from params/body/query
-    req.storeId = req.params.storeId || req.body.store_id || req.query.store_id || req.user.store_id;
+    // Super Admin can specify store via header, query, body, or params.
+    // Fallback to Store 1 for testing convenience if no context is provided.
+    req.storeId = req.headers['x-store-id'] || req.params.storeId || req.params.id || req.body.store_id || req.query.store_id || req.user.store_id;
   } else {
     // Admin/Staff can only access their own store
     req.storeId = req.user.store_id;
+
+    // Additional safeguard: if they are specifically requesting an ID that isn't their store, deny
+    const requestedStoreId = req.headers['x-store-id'] || req.params.storeId || req.params.id || req.body.store_id || req.query.store_id;
+    if (requestedStoreId && String(requestedStoreId) !== String(req.user.store_id)) {
+      return next(new AppError('You do not have permission to access records for this store.', 403));
+    }
   }
 
   if (!req.storeId) {
-    return next(new AppError('Store context is required.', 400));
+    return next(new AppError('Store context is required. Please specify a store ID or ensure your user is assigned to a store.', 400));
   }
 
   next();

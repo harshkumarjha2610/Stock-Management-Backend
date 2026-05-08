@@ -12,4 +12,14 @@ const getSalaryHistory = catchAsync(async (req, res) => {
   sendSuccess(res, payments, 'Salary history retrieved.');
 });
 
-module.exports = { createSalaryPayment, getSalaryHistory };
+const getAllSalaries = catchAsync(async (req, res) => {
+  const payments = await salaryService.getAllSalaries(req.storeId);
+  sendSuccess(res, payments, 'All salary payments retrieved.');
+});
+
+const updateSalaryPayment = catchAsync(async (req, res) => {
+  const payment = await salaryService.updateSalaryPayment(req.params.id, req.body, req.storeId);
+  sendSuccess(res, payment, 'Salary payment updated successfully.');
+});
+
+module.exports = { createSalaryPayment, getSalaryHistory, getAllSalaries, updateSalaryPayment };

@@ -20,4 +20,27 @@ const getSalaryHistory = async (staffId, storeId) => {
   });
 };
 
-module.exports = { createSalaryPayment, getSalaryHistory };
+const getAllSalaries = async (storeId) => {
+  return SalaryPayment.findAll({
+    where: { store_id: storeId },
+    include: [{ association: 'staff', attributes: ['name'] }],
+    order: [['month', 'DESC'], ['created_at', 'DESC']],
+  });
+};
+
+const updateSalaryPayment = async (id, data, storeId) => {
+  const payment = await SalaryPayment.findOne({ where: { id, store_id: storeId } });
+  if (!payment) throw new AppError('Salary payment not found.', 404);
+
+  const updates = {};
+  if (data.status) updates.status = data.status.toUpperCase();
+  if (data.payment_method) {
+    updates.payment_method = data.payment_method.toUpperCase().replace(' ', '_');
+  }
+  if (data.paid_date !== undefined) updates.paid_date = data.paid_date || null;
+
+  await payment.update(updates);
+  return payment;
+};
+
+module.exports = { createSalaryPayment, getSalaryHistory, getAllSalaries, updateSalaryPayment };

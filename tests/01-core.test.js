@@ -240,7 +240,8 @@ describe('Product API', () => {
     const res = await request(app).get('/api/products?search=samsung')
       .set('Authorization', `Bearer ${ctx.adminToken}`);
     expect(res.status).toBe(200);
-    expect(res.body.data.items.length).toBe(1);
+    const items = Array.isArray(res.body.data) ? res.body.data : res.body.data.items;
+    expect(items.length).toBe(1);
   });
 
   it('GET /api/products/:id → should get single product', async () => {

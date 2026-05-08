@@ -11,7 +11,10 @@ router.use(storeAccessGuard);
 
 router.post('/', validate(createStaffSchema), ctrl.createStaff);
 router.get('/', ctrl.getStaff);
+router.get('/attendance', ctrl.getAllAttendance);
 router.get('/:id', ctrl.getStaffById);
+router.put('/:id', ctrl.updateStaff);
+router.delete('/:id', ctrl.deleteStaff);
 router.post('/:id/check-in', ctrl.checkIn);
 router.post('/:id/check-out', ctrl.checkOut);
 router.get('/:id/attendance', ctrl.getAttendance);

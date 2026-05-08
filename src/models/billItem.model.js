@@ -17,14 +17,30 @@ const BillItem = sequelize.define('BillItem', {
     allowNull: false,
     references: { model: 'products', key: 'id' },
   },
+  size: {
+    type: DataTypes.STRING(20),
+    allowNull: true,
+  },
   quantity: {
     type: DataTypes.INTEGER,
     allowNull: false,
+  },
+  purchase_price: {
+    type: DataTypes.DECIMAL(12, 2),
+    allowNull: false,
+    defaultValue: 0,
+    comment: 'Purchase price per unit at time of billing',
   },
   price: {
     type: DataTypes.DECIMAL(12, 2),
     allowNull: false,
     comment: 'Selling price per unit at time of billing',
+  },
+  discount: {
+    type: DataTypes.DECIMAL(12, 2),
+    allowNull: false,
+    defaultValue: 0,
+    comment: 'Discount per unit',
   },
   gst_percent: {
     type: DataTypes.DECIMAL(5, 2),
