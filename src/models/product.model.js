@@ -82,6 +82,22 @@ const Product = sequelize.define('Product', {
     type: DataTypes.STRING(500),
     allowNull: true,
   },
+  unit: {
+    type: DataTypes.STRING(50),
+    allowNull: true,
+  },
+  hsn_code: {
+    type: DataTypes.STRING(50),
+    allowNull: true,
+  },
+  expiry_date: {
+    type: DataTypes.DATEONLY,
+    allowNull: true,
+  },
+  mfg_date: {
+    type: DataTypes.DATEONLY,
+    allowNull: true,
+  },
   description: {
     type: DataTypes.TEXT,
     allowNull: true,

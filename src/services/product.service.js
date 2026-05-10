@@ -35,6 +35,10 @@ const createProduct = async (data, storeId) => {
       min_stock_level: productData.min_stock_level,
       status: productData.status || 'ACTIVE',
       stock_quantity: totalStock,
+      unit: productData.unit,
+      hsn_code: productData.hsn_code,
+      expiry_date: productData.expiry_date,
+      mfg_date: productData.mfg_date,
       store_id: storeId,
     }, { transaction });
 
@@ -167,7 +171,10 @@ const updateProduct = async (id, data, storeId) => {
       gst_percent: productData.gst_percent,
       min_stock_level: productData.min_stock_level,
       status: productData.status,
-
+      unit: productData.unit,
+      hsn_code: productData.hsn_code,
+      expiry_date: productData.expiry_date,
+      mfg_date: productData.mfg_date,
     }, { transaction });
     await transaction.commit();
     return await getProductById(id, storeId);

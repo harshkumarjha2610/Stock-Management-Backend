@@ -17,6 +17,10 @@ const createProductSchema = Joi.object({
   stock_quantity: Joi.number().integer().min(0).default(0),
   min_stock_level: Joi.number().integer().min(0).default(5),
   description: Joi.string().allow('', null),
+  unit: Joi.string().max(50).allow('', null),
+  hsn_code: Joi.string().max(50).allow('', null),
+  expiry_date: Joi.date().iso().allow(null),
+  mfg_date: Joi.date().iso().allow(null),
   sizes: Joi.array().items(
     Joi.object({
       size: Joi.string().required(),
@@ -42,6 +46,10 @@ const updateProductSchema = Joi.object({
   stock_quantity: Joi.number().integer().min(0),
   min_stock_level: Joi.number().integer().min(0),
   description: Joi.string().allow('', null),
+  unit: Joi.string().max(50).allow('', null),
+  hsn_code: Joi.string().max(50).allow('', null),
+  expiry_date: Joi.date().iso().allow(null),
+  mfg_date: Joi.date().iso().allow(null),
   sizes: Joi.array().items(
     Joi.object({
       size: Joi.string().required(),
