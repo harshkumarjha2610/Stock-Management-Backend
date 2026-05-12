@@ -5,6 +5,8 @@ const helmet = require('helmet');
 const morgan = require('morgan');
 const compression = require('compression');
 
+const rateLimit = require('express-rate-limit');
+const env = require('./config/env');
 const routes = require('./routes');
 const errorHandler = require('./middlewares/error.middleware');
 
@@ -13,14 +15,33 @@ const app = express();
 // ──────────────────────────────────────────────
 // Global Middleware
 // ──────────────────────────────────────────────
+
+// Security headers
 app.use(helmet());
+
+// Rate limiting
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // limit each IP to 100 requests per windowMs
+  message: { success: false, message: 'Too many requests from this IP, please try again after 15 minutes.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+if (env.nodeEnv === 'production') {
+  app.use('/api/', limiter);
+}
+
+// CORS
 app.use(cors({
-  origin: '*',
+  origin: env.nodeEnv === 'production' ? env.frontendUrl : '*',
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'x-store-id'],
+  credentials: true,
 }));
+
 app.use(compression());
-app.use(morgan('dev'));
+app.use(morgan(env.nodeEnv === 'production' ? 'combined' : 'dev'));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 

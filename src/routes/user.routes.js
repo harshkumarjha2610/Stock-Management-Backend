@@ -1,5 +1,5 @@
 const router = require('express').Router();
-const { createUser, getProfile, getUsersByStore } = require('../controllers/user.controller');
+const { createUser, getProfile, getUsersByStore, updateActiveStore } = require('../controllers/user.controller');
 const { authenticateUser, authorizeRoles } = require('../middlewares/auth.middleware');
 const validate = require('../middlewares/validate.middleware');
 const { createUserSchema } = require('../validations/auth.validation');
@@ -9,6 +9,9 @@ router.use(authenticateUser);
 
 // Get own profile — any authenticated user
 router.get('/profile', getProfile);
+
+// Update active store — any authenticated user
+router.patch('/active-store', updateActiveStore);
 
 // Create user — Super Admin or Admin
 router.post('/', authorizeRoles(ROLES.SUPER_ADMIN, ROLES.ADMIN), validate(createUserSchema), createUser);

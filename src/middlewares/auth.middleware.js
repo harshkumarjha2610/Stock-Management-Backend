@@ -26,7 +26,6 @@ const authenticateUser = (req, res, next) => {
 
 /**
  * Factory function that returns middleware restricting access to specified roles.
- * Usage: authorizeRoles(ROLES.SUPER_ADMIN, ROLES.ADMIN)
  */
 const authorizeRoles = (...allowedRoles) => {
   return (req, res, next) => {
@@ -42,23 +41,39 @@ const authorizeRoles = (...allowedRoles) => {
  * Attaches the effective store_id to req.storeId for use in services.
  */
 const storeAccessGuard = (req, res, next) => {
-  if (req.user.role === ROLES.SUPER_ADMIN) {
-    // Super Admin can specify store via header, query, body, or params.
-    // Fallback to Store 1 for testing convenience if no context is provided.
-    req.storeId = req.headers['x-store-id'] || req.params.storeId || req.params.id || req.body.store_id || req.query.store_id || req.user.store_id;
-  } else {
-    // Admin/Staff can only access their own store
-    req.storeId = req.user.store_id;
-
-    // Additional safeguard: if they are specifically requesting an ID that isn't their store, deny
-    const requestedStoreId = req.headers['x-store-id'] || req.params.storeId || req.params.id || req.body.store_id || req.query.store_id;
-    if (requestedStoreId && String(requestedStoreId) !== String(req.user.store_id)) {
-      return next(new AppError('You do not have permission to access records for this store.', 403));
-    }
+  const user = req.user;
+  if (!user) {
+    return next(new AppError('Authentication required.', 401));
   }
 
+  // 1. Determine the store ID from various potential sources
+  const storeIdFromContext = 
+    req.headers['x-store-id'] || 
+    req.params.storeId || 
+    req.params.id || 
+    req.body.store_id || 
+    req.query.store_id;
+
+  // 2. Handle Super Admin
+  if (user.role === 'SUPER_ADMIN') {
+    // Super Admin can use the provided context or fallback to their assigned store (usually null)
+    req.storeId = storeIdFromContext || user.store_id;
+    // Super Admin is never blocked by "Store context required"
+    return next();
+  }
+
+  // 3. Handle Admin and Staff
+  // They are strictly limited to their assigned store
+  req.storeId = user.store_id;
+
+  // If they tried to specify a different store, block them
+  if (storeIdFromContext && String(storeIdFromContext) !== String(user.store_id)) {
+    return next(new AppError('You do not have permission to access records for this store.', 403));
+  }
+
+  // If no store_id is found in user record, they can't do anything that requires store context
   if (!req.storeId) {
-    return next(new AppError('Store context is required. Please specify a store ID or ensure your user is assigned to a store.', 400));
+    return next(new AppError('Store context is required. Please ensure your user is assigned to a store.', 400));
   }
 
   next();

@@ -63,4 +63,25 @@ const getUsersByStore = async (storeId) => {
   return users;
 };
 
-module.exports = { createUser, getUserById, getUsersByStore };
+/**
+ * Update the last active store for a user.
+ */
+const updateActiveStore = async (userId, storeId) => {
+  const user = await User.findByPk(userId);
+  if (!user) {
+    throw new AppError('User not found.', 404);
+  }
+
+  // Validate that the store exists
+  const store = await Store.findByPk(storeId);
+  if (!store) {
+    throw new AppError('Store not found.', 404);
+  }
+
+  user.last_active_store_id = storeId;
+  await user.save();
+
+  return user.toJSON();
+};
+
+module.exports = { createUser, getUserById, getUsersByStore, updateActiveStore };

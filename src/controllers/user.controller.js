@@ -18,4 +18,13 @@ const getUsersByStore = catchAsync(async (req, res) => {
   sendSuccess(res, users, 'Users retrieved successfully.');
 });
 
-module.exports = { createUser, getProfile, getUsersByStore };
+const updateActiveStore = catchAsync(async (req, res) => {
+  const { storeId } = req.body;
+  if (!storeId) {
+    return res.status(400).json({ success: false, message: 'storeId is required.' });
+  }
+  const user = await userService.updateActiveStore(req.user.id, storeId);
+  sendSuccess(res, user, 'Active store updated successfully.');
+});
+
+module.exports = { createUser, getProfile, getUsersByStore, updateActiveStore };

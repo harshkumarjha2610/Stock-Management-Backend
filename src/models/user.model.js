@@ -42,6 +42,11 @@ const User = sequelize.define('User', {
     allowNull: false,
     defaultValue: 'ACTIVE',
   },
+  last_active_store_id: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+    references: { model: 'stores', key: 'id' },
+  },
 }, {
   tableName: 'users',
   indexes: [

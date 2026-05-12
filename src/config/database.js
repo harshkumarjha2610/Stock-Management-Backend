@@ -6,6 +6,12 @@ const sequelize = new Sequelize(env.db.name, env.db.user, env.db.password, {
   port: env.db.port,
   dialect: 'postgres',
   logging: env.nodeEnv === 'development' ? console.log : false,
+  dialectOptions: env.db.ssl ? {
+    ssl: {
+      require: true,
+      rejectUnauthorized: false, // For self-signed certificates (common in hosting like Render)
+    },
+  } : {},
   pool: {
     max: 10,
     min: 2,

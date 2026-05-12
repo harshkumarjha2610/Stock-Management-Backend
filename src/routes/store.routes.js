@@ -12,8 +12,8 @@ router.use(authenticateUser);
 router.post('/', authorizeRoles(ROLES.SUPER_ADMIN), validate(createStoreSchema), createStore);
 router.delete('/:id', authorizeRoles(ROLES.SUPER_ADMIN), deleteStore);
 
-// Get and Update can be accessed by Admin too, but limited by storeAccessGuard
-router.get('/', authorizeRoles(ROLES.SUPER_ADMIN, ROLES.ADMIN), storeAccessGuard, getAllStores);
+// Get and Update can be accessed by Admin too
+router.get('/', authorizeRoles(ROLES.SUPER_ADMIN, ROLES.ADMIN), getAllStores);
 router.get('/:id', authorizeRoles(ROLES.SUPER_ADMIN, ROLES.ADMIN), storeAccessGuard, getStoreById);
 router.put('/:id', authorizeRoles(ROLES.SUPER_ADMIN, ROLES.ADMIN), storeAccessGuard, validate(updateStoreSchema), updateStore);
 
