@@ -8,6 +8,7 @@ const ROLES = require('../constants/roles');
 const createStaff = async (data, storeId, creatorRole) => {
   // 1. Create User account for staff if email is provided
   let userId = null;
+  console.log('DEBUG: createStaff received data:', data);
   if (!data.email_id || !data.password) {
     throw new AppError('Email ID and Password are required for staff creation.', 400);
   }
@@ -44,6 +45,12 @@ const getStaff = async (storeId) => {
 const getStaffById = async (id, storeId) => {
   const staff = await Staff.findOne({ where: { id, store_id: storeId } });
   if (!staff) throw new AppError('Staff member not found.', 404);
+  return staff;
+};
+
+const getStaffByUserId = async (userId, storeId) => {
+  const staff = await Staff.findOne({ where: { user_id: userId, store_id: storeId } });
+  if (!staff) throw new AppError('Staff profile not found.', 404);
   return staff;
 };
 
@@ -182,4 +189,4 @@ const markAttendance = async (data, storeId) => {
   return attendance;
 };
 
-module.exports = { createStaff, getStaff, getStaffById, updateStaff, deleteStaff, checkIn, checkOut, getAttendance, getAllAttendance, markAttendance };
+module.exports = { createStaff, getStaff, getStaffById, getStaffByUserId, updateStaff, deleteStaff, checkIn, checkOut, getAttendance, getAllAttendance, markAttendance };

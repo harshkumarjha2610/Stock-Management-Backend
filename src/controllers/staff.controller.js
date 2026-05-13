@@ -12,6 +12,11 @@ const getStaff = catchAsync(async (req, res) => {
   sendSuccess(res, staff, 'Staff list retrieved.');
 });
 
+const getStaffMe = catchAsync(async (req, res) => {
+  const staff = await staffService.getStaffByUserId(req.user.id, req.storeId);
+  sendSuccess(res, staff, 'Your staff profile retrieved.');
+});
+
 const getStaffById = catchAsync(async (req, res) => {
   const staff = await staffService.getStaffById(req.params.id, req.storeId);
   sendSuccess(res, staff, 'Staff member retrieved.');
@@ -28,7 +33,18 @@ const checkOut = catchAsync(async (req, res) => {
 });
 
 const getAttendance = catchAsync(async (req, res) => {
-  const records = await staffService.getAttendance(req.params.id, req.storeId, req.query);
+  const { id } = req.params;
+  const { role, id: userId } = req.user;
+
+  // Security: Staff can only see their own attendance
+  if (role === 'STAFF') {
+    const staff = await staffService.getStaffByUserId(userId, req.storeId);
+    if (staff.id.toString() !== id.toString()) {
+      return res.status(403).json({ success: false, message: 'You are not authorized to view this attendance.' });
+    }
+  }
+
+  const records = await staffService.getAttendance(id, req.storeId, req.query);
   sendSuccess(res, records, 'Attendance records retrieved.');
 });
 
@@ -52,4 +68,4 @@ const markAttendance = catchAsync(async (req, res) => {
   sendSuccess(res, attendance, 'Attendance marked successfully.');
 });
 
-module.exports = { createStaff, getStaff, getStaffById, updateStaff, deleteStaff, checkIn, checkOut, getAttendance, getAllAttendance, markAttendance };
+module.exports = { createStaff, getStaff, getStaffMe, getStaffById, updateStaff, deleteStaff, checkIn, checkOut, getAttendance, getAllAttendance, markAttendance };

@@ -10,6 +10,7 @@ router.use(storeAccessGuard);
 
 router.post('/', authorizeRoles(ROLES.SUPER_ADMIN, ROLES.ADMIN), validate(createStaffSchema), ctrl.createStaff);
 router.get('/', authorizeRoles(ROLES.SUPER_ADMIN, ROLES.ADMIN), ctrl.getStaff);
+router.get('/me', ctrl.getStaffMe);
 router.get('/attendance', authorizeRoles(ROLES.SUPER_ADMIN, ROLES.ADMIN), ctrl.getAllAttendance);
 router.post('/attendance', authorizeRoles(ROLES.SUPER_ADMIN, ROLES.ADMIN), ctrl.markAttendance);
 router.get('/:id', authorizeRoles(ROLES.SUPER_ADMIN, ROLES.ADMIN), ctrl.getStaffById);

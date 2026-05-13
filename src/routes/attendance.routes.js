@@ -7,6 +7,7 @@ router.use(authenticateUser);
 router.use(authorizeRoles(ROLES.SUPER_ADMIN, ROLES.ADMIN));
 router.use(storeAccessGuard);
 
-router.get('/', ctrl.getAllAttendance);
+router.get('/all', ctrl.getAllAttendance);
+router.post('/mark', ctrl.markAttendance);
 
 module.exports = router;
