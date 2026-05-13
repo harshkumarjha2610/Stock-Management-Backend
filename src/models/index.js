@@ -15,14 +15,14 @@ const ProductSize = require('./productSize.model');
 // ──────────────────────────────────────────────
 // Store Associations
 // ──────────────────────────────────────────────
-Store.hasMany(User, { foreignKey: 'store_id', as: 'users' });
-Store.hasMany(Product, { foreignKey: 'store_id', as: 'products' });
-Store.hasMany(Customer, { foreignKey: 'store_id', as: 'customers' });
-Store.hasMany(Bill, { foreignKey: 'store_id', as: 'bills' });
-Store.hasMany(StockHistory, { foreignKey: 'store_id', as: 'stockHistory' });
-Store.hasMany(Staff, { foreignKey: 'store_id', as: 'staff' });
-Store.hasMany(Attendance, { foreignKey: 'store_id', as: 'attendance' });
-Store.hasMany(SalaryPayment, { foreignKey: 'store_id', as: 'salaryPayments' });
+Store.hasMany(User, { foreignKey: 'store_id', as: 'users', onDelete: 'CASCADE' });
+Store.hasMany(Product, { foreignKey: 'store_id', as: 'products', onDelete: 'CASCADE' });
+Store.hasMany(Customer, { foreignKey: 'store_id', as: 'customers', onDelete: 'CASCADE' });
+Store.hasMany(Bill, { foreignKey: 'store_id', as: 'bills', onDelete: 'CASCADE' });
+Store.hasMany(StockHistory, { foreignKey: 'store_id', as: 'stockHistory', onDelete: 'CASCADE' });
+Store.hasMany(Staff, { foreignKey: 'store_id', as: 'staff', onDelete: 'CASCADE' });
+Store.hasMany(Attendance, { foreignKey: 'store_id', as: 'attendance', onDelete: 'CASCADE' });
+Store.hasMany(SalaryPayment, { foreignKey: 'store_id', as: 'salaryPayments', onDelete: 'CASCADE' });
 
 // ──────────────────────────────────────────────
 // User Associations

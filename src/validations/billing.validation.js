@@ -3,7 +3,9 @@ const Joi = require('joi');
 const createBillSchema = Joi.object({
   customer_id: Joi.number().integer().positive().allow(null, ''),
   customer_name: Joi.string().max(150).allow('', null),
-  customer_phone: Joi.string().max(20).allow('', null),
+  customer_phone: Joi.string().pattern(/^[0-9]{10}$/).allow('', null).messages({
+    'string.pattern.base': 'Customer phone number must be exactly 10 digits.'
+  }),
   items: Joi.array().items(
     Joi.object({
       product_id: Joi.number().integer().positive().required(),
@@ -20,6 +22,7 @@ const createBillSchema = Joi.object({
   cash_received: Joi.number().min(0).default(0),
   payment_method: Joi.string().valid('CASH', 'UPI', 'CARD', 'BANK_TRANSFER', 'cash', 'upi', 'card', 'bank_transfer', 'Bank Transfer').default('CASH'),
   paid_status: Joi.string().valid('PAID', 'UNPAID', 'PARTIAL', 'Paid', 'Unpaid', 'Partial').default('PAID'),
+  type: Joi.string().valid('SALE', 'RETURN', 'sale', 'return').default('SALE'),
 });
 
 module.exports = { createBillSchema };

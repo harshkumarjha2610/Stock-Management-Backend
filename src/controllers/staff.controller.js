@@ -3,7 +3,7 @@ const { sendSuccess } = require('../utils/response');
 const staffService = require('../services/staff.service');
 
 const createStaff = catchAsync(async (req, res) => {
-  const staff = await staffService.createStaff(req.body, req.storeId);
+  const staff = await staffService.createStaff(req.body, req.storeId, req.user.role);
   sendSuccess(res, staff, 'Staff member created.', 201);
 });
 
@@ -47,4 +47,9 @@ const deleteStaff = catchAsync(async (req, res) => {
   sendSuccess(res, result, 'Staff member deleted successfully.');
 });
 
-module.exports = { createStaff, getStaff, getStaffById, updateStaff, deleteStaff, checkIn, checkOut, getAttendance, getAllAttendance };
+const markAttendance = catchAsync(async (req, res) => {
+  const attendance = await staffService.markAttendance(req.body, req.storeId);
+  sendSuccess(res, attendance, 'Attendance marked successfully.');
+});
+
+module.exports = { createStaff, getStaff, getStaffById, updateStaff, deleteStaff, checkIn, checkOut, getAttendance, getAllAttendance, markAttendance };

@@ -16,10 +16,12 @@ const createBill = async (data, storeId) => {
     const pMap = {};
     products.forEach((p) => { pMap[p.id] = p; });
 
+    const isReturn = (data.type || '').toUpperCase() === 'RETURN';
+
     for (const item of data.items) {
       const p = pMap[item.product_id];
       if (!p) throw new AppError(`Product ${item.product_id} not found.`, 404);
-      if (p.stock_quantity < item.quantity)
+      if (!isReturn && p.stock_quantity < item.quantity)
         throw new AppError(`Insufficient stock for "${p.name}". Available: ${p.stock_quantity}`, 400);
     }
 
@@ -60,14 +62,43 @@ const createBill = async (data, storeId) => {
     totalDiscount += billDiscountAmount;
 
     const finalAmount = Math.round((totalAmount + totalGST - totalDiscount) * 100) / 100;
-    const invoiceNumber = `INV-${storeId}-${Date.now()}-${uuidv4().slice(0, 4).toUpperCase()}`;
+    const prefix = isReturn ? 'RET' : 'INV';
+    const invoiceNumber = `${prefix}-${storeId}-${Date.now()}-${uuidv4().slice(0, 4).toUpperCase()}`;
+
+    // --- AUTO-CUSTOMER CREATION ---
+    let finalCustomerId = data.customer_id || null;
+    let customerName = data.customer_name || null;
+    let customerPhone = data.customer_phone || null;
+
+    if (!finalCustomerId && customerPhone && customerPhone.length >= 10) {
+      // Try to find existing customer by phone in this store
+      let existingCustomer = await Customer.findOne({
+        where: { phone: customerPhone, store_id: storeId },
+        transaction
+      });
+
+      if (existingCustomer) {
+        finalCustomerId = existingCustomer.id;
+        customerName = existingCustomer.name; // Use existing name if not provided
+      } else if (customerName) {
+        // Create new customer
+        const newCustomer = await Customer.create({
+          store_id: storeId,
+          name: customerName,
+          phone: customerPhone,
+          total_spent: 0,
+          total_orders: 0
+        }, { transaction });
+        finalCustomerId = newCustomer.id;
+      }
+    }
 
     const bill = await Bill.create({
       store_id: storeId,
       invoice_number: invoiceNumber,
-      customer_id: data.customer_id || null,
-      customer_name: data.customer_name || null,
-      customer_phone: data.customer_phone || null,
+      customer_id: finalCustomerId,
+      customer_name: customerName,
+      customer_phone: customerPhone,
       total_amount: Math.round(totalAmount * 100) / 100,
       gst_amount: Math.round(totalGST * 100) / 100,
       discount: Math.round(totalDiscount * 100) / 100,
@@ -77,20 +108,31 @@ const createBill = async (data, storeId) => {
       cash_received: parseFloat(data.cash_received) || 0,
       payment_method: (data.payment_method || 'CASH').toUpperCase().replace(' ', '_'),
       paid_status: (data.paid_status || 'PAID').toUpperCase(),
+      type: isReturn ? 'RETURN' : 'SALE',
     }, { transaction });
 
     await BillItem.bulkCreate(itemsData.map((i) => ({ ...i, bill_id: bill.id })), { transaction });
 
     for (const item of data.items) {
-      await Product.decrement('stock_quantity', { by: item.quantity, where: { id: item.product_id }, transaction });
+      if (isReturn) {
+        await Product.increment('stock_quantity', { by: item.quantity, where: { id: item.product_id }, transaction });
+      } else {
+        await Product.decrement('stock_quantity', { by: item.quantity, where: { id: item.product_id }, transaction });
+      }
     }
 
-    if (data.customer_id) {
-      await Customer.update({
-        total_spent: sequelize.literal(`total_spent + ${finalAmount}`),
-        total_orders: sequelize.literal(`total_orders + 1`),
-        last_purchase: new Date(),
-      }, { where: { id: data.customer_id, store_id: storeId }, transaction });
+    if (finalCustomerId) {
+      const customerUpdate = isReturn
+        ? {
+            total_spent: sequelize.literal(`total_spent - ${finalAmount}`),
+            // We don't decrement total_orders for returns, as it's still a transaction
+          }
+        : {
+            total_spent: sequelize.literal(`total_spent + ${finalAmount}`),
+            total_orders: sequelize.literal(`total_orders + 1`),
+            last_purchase: new Date(),
+          };
+      await Customer.update(customerUpdate, { where: { id: finalCustomerId, store_id: storeId }, transaction });
     }
 
     await transaction.commit();
@@ -125,9 +167,19 @@ const getBills = async (storeId, query) => {
     if (query.from) where.created_at[Op.gte] = new Date(query.from);
     if (query.to) where.created_at[Op.lte] = new Date(query.to);
   }
-  const { rows, count } = await Bill.findAndCountAll({ where,
-    include: [{ association: 'customer', attributes: ['id', 'name', 'phone'] }],
-    order: [['created_at', 'DESC']], limit, offset });
+  const { rows, count } = await Bill.findAndCountAll({
+    where,
+    include: [
+      { association: 'customer', attributes: ['id', 'name', 'phone'] },
+      { 
+        association: 'items', 
+        include: [{ association: 'product', attributes: ['id', 'name', 'category', 'brand', 'sku', 'hsn_code', 'gender', 'fabric', 'color'] }] 
+      }
+    ],
+    order: [['created_at', 'DESC']],
+    limit,
+    offset
+  });
   
   // If 'page' is not provided, the frontend likely expects the full array for reports/dropdowns
   if (!query.page) return rows;

@@ -9,8 +9,8 @@ const startServer = async () => {
     await sequelize.authenticate();
     console.log('✅ Database connection established successfully.');
 
-    // Sync models (alter: true adjusts tables without dropping)
-    await sequelize.sync({ alter: true });
+    // Sync models (alter: true adjusted tables, now stable)
+    await sequelize.sync();
     console.log('✅ Database models synchronized.');
 
     // Seed default Super Admin

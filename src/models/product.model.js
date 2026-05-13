@@ -63,7 +63,7 @@ const Product = sequelize.define('Product', {
     defaultValue: 'ACTIVE',
   },
   barcode_image_url: {
-    type: DataTypes.STRING(500),
+    type: DataTypes.TEXT,
     allowNull: true,
   },
   fabric: {
@@ -79,7 +79,7 @@ const Product = sequelize.define('Product', {
     allowNull: true,
   },
   image_url: {
-    type: DataTypes.STRING(500),
+    type: DataTypes.TEXT,
     allowNull: true,
   },
   unit: {

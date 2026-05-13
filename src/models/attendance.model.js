@@ -34,6 +34,11 @@ const Attendance = sequelize.define('Attendance', {
     allowNull: true,
     comment: 'Calculated hours between check-in and check-out',
   },
+  status: {
+    type: DataTypes.ENUM('PRESENT', 'ABSENT', 'HALF_DAY'),
+    allowNull: false,
+    defaultValue: 'PRESENT',
+  },
 }, {
   tableName: 'attendance',
   indexes: [

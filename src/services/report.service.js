@@ -18,10 +18,10 @@ const getSalesReport = async (storeId, query) => {
     attributes: [
       [fn('DATE', col('Bill.created_at')), 'date'],
       [fn('COUNT', col('Bill.id')), 'total_bills'],
-      [fn('SUM', col('total_amount')), 'total_sales'],
-      [fn('SUM', col('gst_amount')), 'total_gst'],
-      [fn('SUM', col('discount')), 'total_discount'],
-      [fn('SUM', col('final_amount')), 'total_final'],
+      [fn('SUM', literal("CASE WHEN type = 'SALE' THEN total_amount ELSE -total_amount END")), 'total_sales'],
+      [fn('SUM', literal("CASE WHEN type = 'SALE' THEN gst_amount ELSE -gst_amount END")), 'total_gst'],
+      [fn('SUM', literal("CASE WHEN type = 'SALE' THEN discount ELSE -discount END")), 'total_discount'],
+      [fn('SUM', literal("CASE WHEN type = 'SALE' THEN final_amount ELSE -final_amount END")), 'total_final'],
     ],
     group: [fn('DATE', col('Bill.created_at'))],
     order: [[fn('DATE', col('Bill.created_at')), 'DESC']],
@@ -76,8 +76,9 @@ const getProfitReport = async (storeId, query) => {
       // Use historical purchase price if available, otherwise fallback to current
       const purchasePrice = parseFloat(item.purchase_price) || (item.product ? parseFloat(item.product.buying_price) : 0);
       const qty = item.quantity;
-      const revenue = sellPrice * qty;
-      const cost = purchasePrice * qty;
+      const factor = (bill.type === 'RETURN') ? -1 : 1;
+      const revenue = (sellPrice * qty) * factor;
+      const cost = (purchasePrice * qty) * factor;
       const profit = revenue - cost;
 
       totalRevenue += revenue;
@@ -140,16 +141,17 @@ const getGSTReport = async (storeId, query) => {
       report[month] = { month, total: 0, taxable: 0, gst5: 0, gst12: 0, gst18: 0, gst28: 0 };
     }
 
-    report[month].total += parseFloat(bill.gst_amount);
-    report[month].taxable += (parseFloat(bill.final_amount) - parseFloat(bill.gst_amount));
+    const factor = (bill.type === 'RETURN') ? -1 : 1;
+    report[month].total += parseFloat(bill.gst_amount) * factor;
+    report[month].taxable += (parseFloat(bill.final_amount) - parseFloat(bill.gst_amount)) * factor;
 
     for (const item of bill.items) {
       const gst = parseFloat(item.gst_amount);
       const pct = parseFloat(item.gst_percent);
-      if (pct <= 5) report[month].gst5 += gst;
-      else if (pct <= 12) report[month].gst12 += gst;
-      else if (pct <= 18) report[month].gst18 += gst;
-      else report[month].gst28 += gst;
+      if (pct <= 5) report[month].gst5 += gst * factor;
+      else if (pct <= 12) report[month].gst12 += gst * factor;
+      else if (pct <= 18) report[month].gst18 += gst * factor;
+      else report[month].gst28 += gst * factor;
     }
   }
 
@@ -202,11 +204,12 @@ const getDashboardStats = async (storeId) => {
   let todaySales = 0;
   let todayProfit = 0;
   for (const bill of billsToday) {
-    todaySales += parseFloat(bill.final_amount);
+    const factor = (bill.type === 'RETURN') ? -1 : 1;
+    todaySales += parseFloat(bill.final_amount) * factor;
     for (const item of bill.items) {
-      const revenue = parseFloat(item.price) * item.quantity;
+      const revenue = (parseFloat(item.price) * item.quantity) * factor;
       const purchasePrice = item.purchase_price || (item.product ? item.product.buying_price : 0);
-      const cost = parseFloat(purchasePrice) * item.quantity;
+      const cost = (parseFloat(purchasePrice) * item.quantity) * factor;
       todayProfit += (revenue - cost);
     }
   }
@@ -215,9 +218,10 @@ const getDashboardStats = async (storeId) => {
   let totalRev = 0;
   let totalProf = 0;
   for (const bill of allRevenueAndProfit) {
+    const factor = (bill.type === 'RETURN') ? -1 : 1;
     for (const item of bill.items) {
-      const rev = parseFloat(item.price) * item.quantity;
-      const cost = parseFloat(item.purchase_price || 0) * item.quantity;
+      const rev = (parseFloat(item.price) * item.quantity) * factor;
+      const cost = (parseFloat(item.purchase_price || 0) * item.quantity) * factor;
       totalRev += rev;
       totalProf += (rev - cost);
     }
@@ -262,11 +266,12 @@ const getDailySales = async (storeId, days = 14) => {
     const day = new Date(bill.created_at).toLocaleDateString('en-US', { month: 'short', day: '2-digit' });
     if (!dailyData[day]) dailyData[day] = { day, sales: 0, profit: 0 };
 
-    dailyData[day].sales += parseFloat(bill.final_amount);
+    const factor = (bill.type === 'RETURN') ? -1 : 1;
+    dailyData[day].sales += parseFloat(bill.final_amount) * factor;
     for (const item of bill.items) {
-      const revenue = parseFloat(item.price) * item.quantity;
+      const revenue = (parseFloat(item.price) * item.quantity) * factor;
       const purchasePrice = item.purchase_price || (item.product ? item.product.buying_price : 0);
-      const cost = parseFloat(purchasePrice) * item.quantity;
+      const cost = (parseFloat(purchasePrice) * item.quantity) * factor;
       dailyData[day].profit += (revenue - cost);
     }
   }
@@ -299,11 +304,12 @@ const getMonthlySales = async (storeId, months = 6) => {
     const month = new Date(bill.created_at).toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
     if (!monthlyData[month]) monthlyData[month] = { month, sales: 0, profit: 0 };
 
-    monthlyData[month].sales += parseFloat(bill.final_amount);
+    const factor = (bill.type === 'RETURN') ? -1 : 1;
+    monthlyData[month].sales += parseFloat(bill.final_amount) * factor;
     for (const item of bill.items) {
-      const revenue = parseFloat(item.price) * item.quantity;
+      const revenue = (parseFloat(item.price) * item.quantity) * factor;
       const purchasePrice = item.purchase_price || (item.product ? item.product.buying_price : 0);
-      const cost = parseFloat(purchasePrice) * item.quantity;
+      const cost = (parseFloat(purchasePrice) * item.quantity) * factor;
       monthlyData[month].profit += (revenue - cost);
     }
   }
@@ -384,7 +390,7 @@ const getGSTSummary = async (storeId, months = 6) => {
     where: { store_id: storeId, created_at: { [Op.gte]: dateLimit } },
     attributes: [
       [fn('TO_CHAR', col('Bill.created_at'), 'Mon YY'), 'month'],
-      [fn('SUM', col('gst_amount')), 'collected'],
+      [fn('SUM', literal("CASE WHEN type = 'SALE' THEN gst_amount ELSE -gst_amount END")), 'collected'],
     ],
     group: [fn('TO_CHAR', col('Bill.created_at'), 'Mon YY')],
     order: [[fn('TO_CHAR', col('Bill.created_at'), 'Mon YY'), 'DESC']],

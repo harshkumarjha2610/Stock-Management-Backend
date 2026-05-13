@@ -50,6 +50,11 @@ const Staff = sequelize.define('Staff', {
     allowNull: false,
     defaultValue: 'ACTIVE',
   },
+  user_id: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+    references: { model: 'users', key: 'id' },
+  },
 }, {
   tableName: 'staff',
   indexes: [

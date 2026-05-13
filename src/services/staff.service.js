@@ -1,9 +1,26 @@
-const { Staff, Attendance } = require('../models');
+const { Staff, Attendance, User } = require('../models');
 const { Op } = require('sequelize');
 const dayjs = require('dayjs');
 const AppError = require('../utils/AppError');
+const userService = require('./user.service');
+const ROLES = require('../constants/roles');
 
-const createStaff = async (data, storeId) => {
+const createStaff = async (data, storeId, creatorRole) => {
+  // 1. Create User account for staff if email is provided
+  let userId = null;
+  if (!data.email_id || !data.password) {
+    throw new AppError('Email ID and Password are required for staff creation.', 400);
+  }
+  const user = await userService.createUser({
+    name: data.name,
+    email: data.email_id,
+    phone: data.phone,
+    password: data.password,
+      role: ROLES.STAFF,
+      store_id: storeId,
+    }, creatorRole);
+    userId = user.id;
+
   const staff = await Staff.create({
     name: data.name,
     phone: data.phone,
@@ -15,6 +32,7 @@ const createStaff = async (data, storeId) => {
     base_salary: data.base_salary,
     status: data.status ? data.status.toUpperCase() : 'ACTIVE',
     store_id: storeId,
+    user_id: userId,
   });
   return staff;
 };
@@ -138,4 +156,30 @@ const getAllAttendance = async (storeId, query = {}) => {
   });
 };
 
-module.exports = { createStaff, getStaff, getStaffById, updateStaff, deleteStaff, checkIn, checkOut, getAttendance, getAllAttendance };
+/**
+ * Mark Attendance (Admin Action)
+ */
+const markAttendance = async (data, storeId) => {
+  const { staff_id, date, status } = data;
+  
+  // Check if record exists for this date
+  const existing = await Attendance.findOne({
+    where: { staff_id, date, store_id: storeId }
+  });
+
+  if (existing) {
+    await existing.update({ status: status.toUpperCase() });
+    return existing;
+  }
+
+  const attendance = await Attendance.create({
+    staff_id,
+    store_id: storeId,
+    date,
+    status: status.toUpperCase()
+  });
+
+  return attendance;
+};
+
+module.exports = { createStaff, getStaff, getStaffById, updateStaff, deleteStaff, checkIn, checkOut, getAttendance, getAllAttendance, markAttendance };

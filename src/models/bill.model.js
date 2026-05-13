@@ -76,6 +76,11 @@ const Bill = sequelize.define('Bill', {
     allowNull: false,
     defaultValue: 'PAID',
   },
+  type: {
+    type: DataTypes.ENUM('SALE', 'RETURN'),
+    allowNull: false,
+    defaultValue: 'SALE',
+  },
 }, {
   tableName: 'bills',
   indexes: [
