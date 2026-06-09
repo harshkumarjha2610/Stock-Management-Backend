@@ -6,12 +6,11 @@ const { createSalaryPaymentSchema } = require('../validations/salary.validation'
 const ROLES = require('../constants/roles');
 
 router.use(authenticateUser);
-router.use(authorizeRoles(ROLES.SUPER_ADMIN, ROLES.ADMIN));
 router.use(storeAccessGuard);
 
-router.post('/', validate(createSalaryPaymentSchema), ctrl.createSalaryPayment);
-router.get('/', ctrl.getAllSalaries);
-router.get('/staff/:staffId', ctrl.getSalaryHistory);
-router.put('/:id', validate(require('../validations/salary.validation').updateSalaryPaymentSchema), ctrl.updateSalaryPayment);
+router.get('/', authorizeRoles(ROLES.SUPER_ADMIN, ROLES.ADMIN), ctrl.getAllSalaries);
+router.get('/staff/:staffId', authorizeRoles(ROLES.SUPER_ADMIN, ROLES.ADMIN), ctrl.getSalaryHistory);
+router.post('/', authorizeRoles(ROLES.SUPER_ADMIN), validate(createSalaryPaymentSchema), ctrl.createSalaryPayment);
+router.put('/:id', authorizeRoles(ROLES.SUPER_ADMIN), validate(require('../validations/salary.validation').updateSalaryPaymentSchema), ctrl.updateSalaryPayment);
 
 module.exports = router;
