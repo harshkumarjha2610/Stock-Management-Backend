@@ -76,16 +76,27 @@ const deleteStaff = async (id, storeId) => {
   return { id };
 };
 
+const resolveStaffId = async (staffId, storeId) => {
+  try {
+    await getStaffById(staffId, storeId);
+    return staffId;
+  } catch (err) {
+    const staff = await getStaffByUserId(staffId, storeId);
+    return staff.id;
+  }
+};
+
 /**
  * Check-in: create attendance record with current time.
  */
 const checkIn = async (staffId, storeId) => {
-  const staff = await getStaffById(staffId, storeId);
+  const resolvedStaffId = await resolveStaffId(staffId, storeId);
+  const staff = await getStaffById(resolvedStaffId, storeId);
   const today = dayjs().format('YYYY-MM-DD');
 
   // Check if already checked in today
   const existing = await Attendance.findOne({
-    where: { staff_id: staffId, store_id: storeId, date: today },
+    where: { staff_id: resolvedStaffId, store_id: storeId, date: today },
   });
 
   if (existing && existing.check_in && !existing.check_out) {
@@ -97,7 +108,7 @@ const checkIn = async (staffId, storeId) => {
   }
 
   const attendance = await Attendance.create({
-    staff_id: staffId,
+    staff_id: resolvedStaffId,
     store_id: storeId,
     date: today,
     check_in: new Date(),
@@ -112,8 +123,9 @@ const checkIn = async (staffId, storeId) => {
 const checkOut = async (staffId, storeId) => {
   const today = dayjs().format('YYYY-MM-DD');
 
+  const resolvedStaffId = await resolveStaffId(staffId, storeId);
   const attendance = await Attendance.findOne({
-    where: { staff_id: staffId, store_id: storeId, date: today, check_out: null },
+    where: { staff_id: resolvedStaffId, store_id: storeId, date: today, check_out: null },
   });
 
   if (!attendance) {

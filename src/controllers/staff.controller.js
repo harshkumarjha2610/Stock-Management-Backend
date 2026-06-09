@@ -7,7 +7,10 @@ const ROLES = require('../constants/roles');
 const ensureSelfOrAdmin = async (req, staffId) => {
   if (req.user.role === ROLES.STAFF) {
     const staff = await staffService.getStaffByUserId(req.user.id, req.storeId);
-    if (staff.id.toString() !== staffId.toString()) {
+    if (
+      staff.id.toString() !== staffId.toString() &&
+      req.user.id.toString() !== staffId.toString()
+    ) {
       throw new AppError('You are not authorized to perform this action.', 403);
     }
   }
