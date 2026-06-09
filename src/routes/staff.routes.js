@@ -16,8 +16,8 @@ router.post('/attendance', authorizeRoles(ROLES.SUPER_ADMIN, ROLES.ADMIN), ctrl.
 router.get('/:id', authorizeRoles(ROLES.SUPER_ADMIN, ROLES.ADMIN), ctrl.getStaffById);
 router.put('/:id', authorizeRoles(ROLES.SUPER_ADMIN, ROLES.ADMIN), ctrl.updateStaff);
 router.delete('/:id', authorizeRoles(ROLES.SUPER_ADMIN, ROLES.ADMIN), ctrl.deleteStaff);
-router.post('/:id/check-in', authorizeRoles(ROLES.SUPER_ADMIN, ROLES.ADMIN), ctrl.checkIn);
-router.post('/:id/check-out', authorizeRoles(ROLES.SUPER_ADMIN, ROLES.ADMIN), ctrl.checkOut);
+router.post('/:id/check-in', authorizeRoles(ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.STAFF), ctrl.checkIn);
+router.post('/:id/check-out', authorizeRoles(ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.STAFF), ctrl.checkOut);
 router.get('/:id/attendance', authorizeRoles(ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.STAFF), ctrl.getAttendance);
 
 module.exports = router;

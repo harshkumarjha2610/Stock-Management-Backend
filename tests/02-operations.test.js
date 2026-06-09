@@ -306,12 +306,13 @@ describe('Staff API', () => {
     expect(res.status).toBe(400);
   });
 
-  it('POST /api/staff/:id/check-out → should check out with hours', async () => {
+  it('POST /api/staff/:id/check-out → should check out with hours and half-day when <6h', async () => {
     const res = await request(app).post(`/api/staff/${ctx.staffId}/check-out`)
       .set('Authorization', `Bearer ${ctx.adminToken}`);
     expect(res.status).toBe(200);
     expect(res.body.data.check_out).toBeDefined();
     expect(res.body.data.working_hours).toBeDefined();
+    expect(res.body.data.status).toBe('HALF_DAY');
   });
 
   it('POST /api/staff/:id/check-out → should reject without check-in', async () => {

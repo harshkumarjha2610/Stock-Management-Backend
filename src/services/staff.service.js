@@ -125,9 +125,12 @@ const checkOut = async (staffId, storeId) => {
   const diffMs = checkOutTime - checkInTime;
   const workingHours = Math.round((diffMs / (1000 * 60 * 60)) * 100) / 100;
 
+  const status = workingHours < 6 ? 'HALF_DAY' : 'PRESENT';
+
   await attendance.update({
     check_out: checkOutTime,
     working_hours: workingHours,
+    status,
   });
 
   return attendance;

@@ -153,4 +153,30 @@ describe('RBAC Deep Dive', () => {
     // Our Product routes are: router.use(authorizeRoles(ROLES.SUPER_ADMIN, ROLES.ADMIN));
     expect(res.status).toBe(403);
   });
+
+  it('Staff member should be able to check in and check out themselves', async () => {
+    await request(app).post('/api/users')
+      .set('Authorization', `Bearer ${ctx.superAdminToken}`)
+      .send({ name: 'Self Staff', email: 'selfstaff@test.com', password: 'password123', role: 'STAFF', store_id: ctx.store1.id });
+
+    const loginRes = await request(app).post('/api/auth/login')
+      .send({ email: 'selfstaff@test.com', password: 'password123' });
+    const staffToken = loginRes.body.data.token;
+
+    const meRes = await request(app).get('/api/staff/me')
+      .set('Authorization', `Bearer ${staffToken}`);
+    expect(meRes.status).toBe(200);
+    const staffId = meRes.body.data.id;
+
+    const checkInRes = await request(app).post(`/api/staff/${staffId}/check-in`)
+      .set('Authorization', `Bearer ${staffToken}`);
+    expect(checkInRes.status).toBe(201);
+    expect(checkInRes.body.data.check_in).toBeDefined();
+
+    const checkOutRes = await request(app).post(`/api/staff/${staffId}/check-out`)
+      .set('Authorization', `Bearer ${staffToken}`);
+    expect(checkOutRes.status).toBe(200);
+    expect(checkOutRes.body.data.check_out).toBeDefined();
+    expect(['PRESENT', 'HALF_DAY']).toContain(checkOutRes.body.data.status);
+  });
 });

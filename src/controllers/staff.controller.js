@@ -1,6 +1,17 @@
 const catchAsync = require('../utils/catchAsync');
 const { sendSuccess } = require('../utils/response');
+const AppError = require('../utils/AppError');
 const staffService = require('../services/staff.service');
+const ROLES = require('../constants/roles');
+
+const ensureSelfOrAdmin = async (req, staffId) => {
+  if (req.user.role === ROLES.STAFF) {
+    const staff = await staffService.getStaffByUserId(req.user.id, req.storeId);
+    if (staff.id.toString() !== staffId.toString()) {
+      throw new AppError('You are not authorized to perform this action.', 403);
+    }
+  }
+};
 
 const createStaff = catchAsync(async (req, res) => {
   const staff = await staffService.createStaff(req.body, req.storeId, req.user.role);
@@ -23,11 +34,13 @@ const getStaffById = catchAsync(async (req, res) => {
 });
 
 const checkIn = catchAsync(async (req, res) => {
+  await ensureSelfOrAdmin(req, req.params.id);
   const attendance = await staffService.checkIn(req.params.id, req.storeId);
   sendSuccess(res, attendance, 'Checked in successfully.', 201);
 });
 
 const checkOut = catchAsync(async (req, res) => {
+  await ensureSelfOrAdmin(req, req.params.id);
   const attendance = await staffService.checkOut(req.params.id, req.storeId);
   sendSuccess(res, attendance, 'Checked out successfully.');
 });
