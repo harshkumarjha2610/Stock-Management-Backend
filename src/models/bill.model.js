@@ -23,6 +23,11 @@ const Bill = sequelize.define('Bill', {
     allowNull: true,
     references: { model: 'customers', key: 'id' },
   },
+  billed_by: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+    references: { model: 'users', key: 'id' },
+  },
   customer_name: {
     type: DataTypes.STRING(150),
     allowNull: true,
@@ -91,6 +96,7 @@ const Bill = sequelize.define('Bill', {
   indexes: [
     { fields: ['store_id'] },
     { fields: ['customer_id'] },
+    { fields: ['billed_by'] },
     { fields: ['created_at'] },
     { unique: true, fields: ['invoice_number'] },
   ],

@@ -28,6 +28,7 @@ Store.hasMany(SalaryPayment, { foreignKey: 'store_id', as: 'salaryPayments', onD
 // User Associations
 // ──────────────────────────────────────────────
 User.belongsTo(Store, { foreignKey: 'store_id', as: 'store' });
+User.hasMany(Bill, { foreignKey: 'billed_by', as: 'billsBilled' });
 
 // ──────────────────────────────────────────────
 // Product Associations
@@ -60,6 +61,7 @@ Customer.hasMany(Bill, { foreignKey: 'customer_id', as: 'bills' });
 // ──────────────────────────────────────────────
 Bill.belongsTo(Store, { foreignKey: 'store_id', as: 'store' });
 Bill.belongsTo(Customer, { foreignKey: 'customer_id', as: 'customer' });
+Bill.belongsTo(User, { foreignKey: 'billed_by', as: 'biller' });
 Bill.hasMany(BillItem, { foreignKey: 'bill_id', as: 'items' });
 
 // ──────────────────────────────────────────────

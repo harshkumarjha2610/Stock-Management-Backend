@@ -3,7 +3,7 @@ const { sendSuccess } = require('../utils/response');
 const billingService = require('../services/billing.service');
 
 const createBill = catchAsync(async (req, res) => {
-  const bill = await billingService.createBill(req.body, req.storeId);
+  const bill = await billingService.createBill(req.body, req.storeId, req.user.id);
   sendSuccess(res, bill, 'Bill created successfully.', 201);
 });
 

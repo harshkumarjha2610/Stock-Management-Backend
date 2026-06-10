@@ -6,7 +6,7 @@ const { createBillSchema } = require('../validations/billing.validation');
 const ROLES = require('../constants/roles');
 
 router.use(authenticateUser);
-router.use(authorizeRoles(ROLES.SUPER_ADMIN, ROLES.ADMIN));
+router.use(authorizeRoles(ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.STAFF));
 router.use(storeAccessGuard);
 
 router.post('/', validate(createBillSchema), ctrl.createBill);

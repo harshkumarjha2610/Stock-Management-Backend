@@ -111,6 +111,7 @@ model User {
   last_active_store_id Int?          @db.Integer
   last_active_store    Store?        @relation("LastActiveStore", fields: [last_active_store_id], references: [id])
   staffProfile         Staff?        @relation("StaffUser")
+  bills_billed         Bill[]        @relation("BillsBilledBy")
   created_at           DateTime      @default(now()) @map("created_at")
   updated_at           DateTime      @updatedAt @map("updated_at")
 
@@ -223,6 +224,8 @@ model Bill {
   invoice_number String       @unique @db.VarChar(50)
   customer_id    Int?         @db.Integer
   customer       Customer?    @relation(fields: [customer_id], references: [id])
+  billed_by      Int?         @db.Integer
+  biller         User?        @relation("BillsBilledBy", fields: [billed_by], references: [id])
   customer_name  String?      @db.VarChar(150)
   customer_phone String?      @db.VarChar(20)
   total_amount   Decimal      @default(0) @db.Decimal(14, 2)
@@ -241,6 +244,7 @@ model Bill {
 
   @@index([store_id])
   @@index([customer_id])
+  @@index([billed_by])
   @@index([created_at])
   @@map("bills")
 }

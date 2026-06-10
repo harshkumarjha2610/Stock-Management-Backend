@@ -5,7 +5,7 @@ const AppError = require('../utils/AppError');
 const { v4: uuidv4 } = require('uuid');
 const { parsePagination, paginatedResponse } = require('../utils/pagination');
 
-const createBill = async (data, storeId) => {
+const createBill = async (data, storeId, billedByUserId) => {
   const transaction = await sequelize.transaction();
   try {
     const productIds = data.items.map((i) => i.product_id);
@@ -112,6 +112,7 @@ const createBill = async (data, storeId) => {
       store_id: storeId,
       invoice_number: invoiceNumber,
       customer_id: finalCustomerId,
+      billed_by: billedByUserId,
       customer_name: customerName,
       customer_phone: customerPhone,
       total_amount: Math.round(totalAmount * 100) / 100,
@@ -156,7 +157,8 @@ const createBill = async (data, storeId) => {
     return await Bill.findByPk(bill.id, {
       include: [
         { association: 'items', include: [{ association: 'product', attributes: ['id', 'name', 'barcode'] }] },
-        { association: 'customer', attributes: ['id', 'name', 'phone'] }
+        { association: 'customer', attributes: ['id', 'name', 'phone'] },
+        { association: 'biller', attributes: ['id', 'name', 'email', 'role'] }
       ],
     });
   } catch (err) {
@@ -168,7 +170,8 @@ const createBill = async (data, storeId) => {
 const getBillById = async (id, storeId) => {
   const bill = await Bill.findOne({ where: { id, store_id: storeId },
     include: [{ association: 'items', include: [{ association: 'product', attributes: ['id', 'name', 'barcode'] }] },
-      { association: 'customer', attributes: ['id', 'name', 'phone'] }] });
+      { association: 'customer', attributes: ['id', 'name', 'phone'] },
+      { association: 'biller', attributes: ['id', 'name', 'email', 'role'] }] });
   if (!bill) throw new AppError('Bill not found.', 404);
   return bill;
 };
@@ -188,6 +191,7 @@ const getBills = async (storeId, query) => {
     where,
     include: [
       { association: 'customer', attributes: ['id', 'name', 'phone'] },
+      { association: 'biller', attributes: ['id', 'name', 'email', 'role'] },
       { 
         association: 'items', 
         include: [{ association: 'product', attributes: ['id', 'name', 'category', 'brand', 'sku', 'hsn_code', 'gender', 'fabric', 'color'] }] 
