@@ -47,6 +47,11 @@ const Customer = sequelize.define('Customer', {
     allowNull: false,
     defaultValue: 0,
   },
+  coins: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+    defaultValue: 0,
+  },
   total_spent: {
     type: DataTypes.DECIMAL(14, 2),
     allowNull: false,

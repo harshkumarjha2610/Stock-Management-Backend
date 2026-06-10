@@ -65,6 +65,9 @@ const createBill = async (data, storeId) => {
     const prefix = isReturn ? 'RET' : 'INV';
     const invoiceNumber = `${prefix}-${storeId}-${Date.now()}-${uuidv4().slice(0, 4).toUpperCase()}`;
 
+    const usedCoins = parseInt(data.coins, 10) || 0;
+    if (usedCoins < 0) throw new AppError('Invalid coins value.', 400);
+
     // --- AUTO-CUSTOMER CREATION ---
     let finalCustomerId = data.customer_id || null;
     let customerName = data.customer_name || null;
@@ -87,10 +90,22 @@ const createBill = async (data, storeId) => {
           name: customerName,
           phone: customerPhone,
           total_spent: 0,
-          total_orders: 0
+          total_orders: 0,
+          coins: 0,
         }, { transaction });
         finalCustomerId = newCustomer.id;
       }
+    }
+
+    let customer = null;
+    if (finalCustomerId) {
+      customer = await Customer.findOne({ where: { id: finalCustomerId, store_id: storeId }, transaction });
+      if (!customer) throw new AppError('Customer not found.', 404);
+      if (usedCoins > customer.coins) throw new AppError('Customer has insufficient coins.', 400);
+    }
+
+    if (usedCoins > 0 && !customer) {
+      throw new AppError('Customer must be identified to use coins.', 400);
     }
 
     const bill = await Bill.create({
@@ -103,6 +118,7 @@ const createBill = async (data, storeId) => {
       gst_amount: Math.round(totalGST * 100) / 100,
       discount: Math.round(totalDiscount * 100) / 100,
       discount_percent: billDiscountPercent,
+      coins_used: usedCoins,
       final_amount: finalAmount,
       grand_total: finalAmount,
       cash_received: parseFloat(data.cash_received) || 0,
@@ -131,6 +147,7 @@ const createBill = async (data, storeId) => {
             total_spent: sequelize.literal(`total_spent + ${finalAmount}`),
             total_orders: sequelize.literal(`total_orders + 1`),
             last_purchase: new Date(),
+            coins: sequelize.literal(`coalesce(coins, 0) + ${Math.floor(finalAmount / 100)} - ${usedCoins}`),
           };
       await Customer.update(customerUpdate, { where: { id: finalCustomerId, store_id: storeId }, transaction });
     }

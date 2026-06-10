@@ -144,6 +144,7 @@ describe('Customer API', () => {
     expect(res.status).toBe(200);
     const items = Array.isArray(res.body.data) ? res.body.data : res.body.data.items;
     expect(items.length).toBe(1);
+    expect(items[0].coins).toBeDefined();
   });
 
   it('GET /api/customers/:id → should get customer by ID', async () => {
@@ -177,6 +178,34 @@ describe('Billing API', () => {
     expect(parseFloat(res.body.data.final_amount)).toBeGreaterThan(0);
     expect(res.body.data.items.length).toBe(2);
     ctx.billId = res.body.data.id;
+  });
+
+  it('POST /api/billing → should award coins for purchase and deduct used coins', async () => {
+    const before = await request(app).get(`/api/customers/${ctx.customerId}`)
+      .set('Authorization', `Bearer ${ctx.adminToken}`);
+    expect(before.status).toBe(200);
+    const beforeCoins = parseInt(before.body.data.coins, 10) || 0;
+
+    const res = await request(app).post('/api/billing')
+      .set('Authorization', `Bearer ${ctx.adminToken}`)
+      .send({
+        customer_id: ctx.customerId,
+        items: [
+          { product_id: ctx.product2Id, quantity: 2 },
+        ],
+        coins: 1,
+        payment_method: 'CASH',
+        paid_status: 'PAID',
+      });
+
+    expect(res.status).toBe(201);
+    expect(typeof res.body.data.coins_used).toBe('number');
+    const earnedCoins = Math.floor(parseFloat(res.body.data.final_amount) / 100);
+
+    const after = await request(app).get(`/api/customers/${ctx.customerId}`)
+      .set('Authorization', `Bearer ${ctx.adminToken}`);
+    expect(after.status).toBe(200);
+    expect(parseInt(after.body.data.coins, 10)).toBe(beforeCoins - 1 + earnedCoins);
   });
 
   it('POST /api/billing → should reduce stock after billing', async () => {

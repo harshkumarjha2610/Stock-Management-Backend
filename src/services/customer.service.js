@@ -11,6 +11,7 @@ const createCustomer = async (data, storeId) => {
     city: data.city,
     status: data.status || 'active',
     tag: data.tag || 'new',
+    coins: parseInt(data.coins, 10) || 0,
     store_id: storeId,
   });
   return customer;
@@ -44,6 +45,7 @@ const updateCustomer = async (id, data, storeId) => {
     city: data.city,
     status: data.status,
     tag: data.tag,
+    coins: data.coins !== undefined ? parseInt(data.coins, 10) : customer.coins,
   });
   return customer;
 };
