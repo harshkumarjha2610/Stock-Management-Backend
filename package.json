@@ -7,7 +7,10 @@
     "start": "node src/server.js",
     "dev": "nodemon src/server.js",
     "seed": "node src/seeders/superAdmin.seed.js",
-    "test": "jest --runInBand --forceExit --detectOpenHandles --verbose"
+    "test": "jest --runInBand --forceExit --detectOpenHandles --verbose",
+    "prisma:generate": "prisma generate",
+    "prisma:studio": "prisma studio",
+    "prisma:migrate": "prisma migrate dev --name init"
   },
   "jest": {
     "testEnvironment": "node",
@@ -26,6 +29,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@prisma/client": "^5.12.0",
     "bcryptjs": "^2.4.3",
     "bwip-js": "^4.5.1",
     "compression": "^1.7.4",
@@ -46,6 +50,7 @@
   "devDependencies": {
     "jest": "^29.7.0",
     "nodemon": "^3.1.7",
+    "prisma": "^5.12.0",
     "supertest": "^7.2.2"
   }
 }

@@ -1,17 +1,22 @@
 const app = require('./app');
 const env = require('./config/env');
 const { sequelize } = require('./models');
+const prisma = require('./prisma/client');
 const seedSuperAdmin = require('./seeders/superAdmin.seed');
 
 const startServer = async () => {
   try {
-    // Test database connection
+    // Test Sequelize database connection
     await sequelize.authenticate();
-    console.log('✅ Database connection established successfully.');
+    console.log('✅ Sequelize database connection established successfully.');
 
     // Sync models (alter: true adjusted tables, now stable)
     await sequelize.sync();
-    console.log('✅ Database models synchronized.');
+    console.log('✅ Sequelize database models synchronized.');
+
+    // Connect Prisma client
+    await prisma.$connect();
+    console.log('✅ Prisma connected successfully.');
 
     // Seed default Super Admin
     await seedSuperAdmin();
