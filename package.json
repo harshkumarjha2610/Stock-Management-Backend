@@ -8,6 +8,7 @@
     "dev": "nodemon src/server.js",
     "seed": "node src/seeders/superAdmin.seed.js",
     "test": "jest --runInBand --forceExit --detectOpenHandles --verbose",
+    "build": "prisma generate",
     "prisma:generate": "prisma generate",
     "prisma:studio": "prisma studio",
     "prisma:migrate": "prisma migrate dev --name init"
