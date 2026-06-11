@@ -24,7 +24,9 @@ const createProductSchema = Joi.object({
   sizes: Joi.array().items(
     Joi.object({
       size: Joi.string().required(),
-      quantity: Joi.number().integer().min(0).default(0)
+      quantity: Joi.number().integer().min(0).default(0),
+      barcode: Joi.string().max(100).allow('', null),
+      barcode_image_url: Joi.string().allow('', null)
     })
   ).allow(null),
 });
@@ -53,7 +55,9 @@ const updateProductSchema = Joi.object({
   sizes: Joi.array().items(
     Joi.object({
       size: Joi.string().required(),
-      quantity: Joi.number().integer().min(0).default(0)
+      quantity: Joi.number().integer().min(0).default(0),
+      barcode: Joi.string().max(100).allow('', null),
+      barcode_image_url: Joi.string().allow('', null)
     })
   ).allow(null),
 }).min(1);

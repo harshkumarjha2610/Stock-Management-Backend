@@ -21,11 +21,20 @@ const ProductSize = sequelize.define('ProductSize', {
     allowNull: false,
     defaultValue: 0,
   },
+  barcode: {
+    type: DataTypes.STRING(100),
+    allowNull: true,
+  },
+  barcode_image_url: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
 }, {
   tableName: 'product_sizes',
   indexes: [
     { fields: ['product_id'] },
     { unique: true, fields: ['product_id', 'size'] },
+    { fields: ['barcode'] },
   ],
 });
 

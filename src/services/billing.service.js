@@ -1,4 +1,4 @@
-const { Bill, BillItem, Product, Customer } = require('../models');
+const { Bill, BillItem, Product, Customer, ProductSize } = require('../models');
 const { Op } = require('sequelize');
 const sequelize = require('../config/database');
 const AppError = require('../utils/AppError');
@@ -133,8 +133,14 @@ const createBill = async (data, storeId, billedByUserId) => {
     for (const item of data.items) {
       if (isReturn) {
         await Product.increment('stock_quantity', { by: item.quantity, where: { id: item.product_id }, transaction });
+        if (item.size) {
+          await ProductSize.increment('quantity', { by: item.quantity, where: { product_id: item.product_id, size: item.size }, transaction });
+        }
       } else {
         await Product.decrement('stock_quantity', { by: item.quantity, where: { id: item.product_id }, transaction });
+        if (item.size) {
+          await ProductSize.decrement('quantity', { by: item.quantity, where: { product_id: item.product_id, size: item.size }, transaction });
+        }
       }
     }
 

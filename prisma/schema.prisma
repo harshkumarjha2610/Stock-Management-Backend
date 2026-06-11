@@ -163,11 +163,14 @@ model ProductSize {
   product    Product  @relation(fields: [product_id], references: [id])
   size       String   @db.VarChar(20)
   quantity   Int      @default(0)
+  barcode    String?  @db.VarChar(100)
+  barcode_image_url String?
   created_at DateTime @default(now()) @map("created_at")
   updated_at DateTime @updatedAt @map("updated_at")
 
   @@unique([product_id, size])
   @@index([product_id])
+  @@index([barcode])
   @@map("product_sizes")
 }
 
