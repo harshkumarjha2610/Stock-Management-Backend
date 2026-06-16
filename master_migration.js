@@ -1,7 +1,7 @@
 const sequelize = require('./src/config/database');
 
 async function migrate() {
-  const tables = ['bill_items', 'bills', 'stock_history', 'product_sizes', 'products', 'customers', 'staff'];
+  const tables = ['bill_items', 'bills', 'stock_history', 'product_sizes', 'products', 'customers', 'staff', 'stores'];
   
   console.log('Cleaning up constraints...');
   for (const table of tables) {

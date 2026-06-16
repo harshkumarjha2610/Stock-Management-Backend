@@ -83,6 +83,7 @@ model Store {
   category       StoreCategory    @default(GROCERY)
   logo_url       String?
   upi_id         String?          @db.VarChar(150)
+  upi_payee_name String?          @db.VarChar(150)
   created_at     DateTime         @default(now()) @map("created_at")
   updated_at     DateTime         @updatedAt @map("updated_at")
   users          User[]

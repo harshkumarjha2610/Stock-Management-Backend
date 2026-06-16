@@ -17,6 +17,7 @@ const createStoreSchema = Joi.object({
   category: Joi.string().valid('GROCERY', 'GARMENTS').default('GROCERY'),
   logo_url: Joi.string().allow('', null),
   upi_id: Joi.string().allow('', null),
+  upi_payee_name: Joi.string().max(150).allow('', null),
   admins: Joi.array().items(adminSchema).optional(),
 });
 
@@ -29,6 +30,7 @@ const updateStoreSchema = Joi.object({
   category: Joi.string().valid('GROCERY', 'GARMENTS'),
   logo_url: Joi.string().allow('', null),
   upi_id: Joi.string().allow('', null),
+  upi_payee_name: Joi.string().max(150).allow('', null),
   admins: Joi.array().items(adminSchema).optional(),
 }).min(1);
 

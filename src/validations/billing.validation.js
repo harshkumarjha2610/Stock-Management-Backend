@@ -13,6 +13,7 @@ const createBillSchema = Joi.object({
       price: Joi.number().min(0),
       discount: Joi.number().min(0).default(0),
       gst_percent: Joi.number().min(0),
+      size: Joi.string().max(20).allow('', null),
     })
   ).min(1).required().messages({
     'array.min': 'At least one item is required to create a bill',

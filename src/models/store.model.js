@@ -40,6 +40,10 @@ const Store = sequelize.define('Store', {
     type: DataTypes.STRING(150),
     allowNull: true,
   },
+  upi_payee_name: {
+    type: DataTypes.STRING(150),
+    allowNull: true,
+  },
 }, {
   tableName: 'stores',
 });

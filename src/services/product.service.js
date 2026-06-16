@@ -47,35 +47,23 @@ const createProduct = async (data, storeId) => {
       const sizesData = [];
       for (const s of sizes) {
         let sizeBarcode = null;
-        let sizeBarcodeUrl = null;
-        try {
-          sizeBarcode = barcodeService.generateSizeBarcodeString(storeId, product.id, s.size);
-          sizeBarcodeUrl = await barcodeService.generateBarcodeImage(sizeBarcode);
-        } catch (err) {
-          console.error(`⚠️ Size barcode generation failed for size ${s.size} of product ${product.id}`, err.message);
-        }
+        sizeBarcode = barcodeService.generateSizeBarcodeString(storeId, product.id, s.size);
         sizesData.push({
           product_id: product.id,
           size: s.size,
           quantity: s.quantity || 0,
           barcode: sizeBarcode,
-          barcode_image_url: sizeBarcodeUrl,
+          barcode_image_url: null,
         });
       }
       await ProductSize.bulkCreate(sizesData, { transaction });
     } else {
       // Generate barcode after creation for products without sizes
-      try {
-        const barcodeString = barcodeService.generateBarcodeString(storeId, product.id);
-        const barcodeImageUrl = await barcodeService.generateBarcodeImage(barcodeString);
-
-        await product.update({
-          barcode: barcodeString,
-          barcode_image_url: barcodeImageUrl,
-        }, { transaction });
-      } catch (err) {
-        console.error('⚠️ Barcode generation failed for product', product.id, err.message);
-      }
+      const barcodeString = barcodeService.generateBarcodeString(storeId, product.id);
+      await product.update({
+        barcode: barcodeString,
+        barcode_image_url: null,
+      }, { transaction });
     }
 
     await transaction.commit();
@@ -182,30 +170,23 @@ const updateProduct = async (id, data, storeId) => {
           }, { transaction });
         } else {
           let sizeBarcode = null;
-          let sizeBarcodeUrl = null;
-          try {
-            sizeBarcode = barcodeService.generateSizeBarcodeString(storeId, id, s.size);
-            sizeBarcodeUrl = await barcodeService.generateBarcodeImage(sizeBarcode);
-          } catch (err) {
-            console.error(`⚠️ Size barcode generation failed for size ${s.size} of product ${id}`, err.message);
-          }
+          sizeBarcode = barcodeService.generateSizeBarcodeString(storeId, id, s.size);
           await ProductSize.create({
             product_id: id,
             size: s.size,
             quantity: s.quantity || 0,
             barcode: sizeBarcode,
-            barcode_image_url: sizeBarcodeUrl,
+            barcode_image_url: null,
           }, { transaction });
         }
       }
     }
 
-    await product.update({
+    const updateData = {
       name: productData.name,
       description: productData.description,
       brand: productData.brand,
       sku: productData.sku,
-      barcode: productData.barcode,
       category: productData.category,
       gender: productData.gender,
       fabric: productData.fabric,
@@ -220,7 +201,12 @@ const updateProduct = async (id, data, storeId) => {
       hsn_code: productData.hsn_code,
       expiry_date: productData.expiry_date,
       mfg_date: productData.mfg_date,
-    }, { transaction });
+    };
+    if (productData.barcode !== undefined) {
+      updateData.barcode = productData.barcode;
+      updateData.barcode_image_url = null;
+    }
+    await product.update(updateData, { transaction });
     await transaction.commit();
     return await getProductById(id, storeId);
   } catch (err) {
