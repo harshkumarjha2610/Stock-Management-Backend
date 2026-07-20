@@ -34,7 +34,7 @@ if (env.nodeEnv === 'production') {
 
 // CORS
 app.use(cors({
-  origin: env.nodeEnv === 'production' ? env.frontendUrl : '*',
+  origin: 'https://stock-management-frontend-hiwn.vercel.app',
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'x-store-id'],
   credentials: true,
