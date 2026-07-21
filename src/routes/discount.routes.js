@@ -11,6 +11,10 @@ router.use(storeAccessGuard);
 router.post('/category', ctrl.applyCategoryDiscount);
 router.get('/category', ctrl.getCategoryRules);
 
+// Brand discount endpoints
+router.post('/brand', ctrl.applyBrandDiscount);
+router.get('/brand', ctrl.getBrandRules);
+
 // Generic delete (works for any rule type by ID)
 router.delete('/:id', ctrl.deleteDiscountRule);
 

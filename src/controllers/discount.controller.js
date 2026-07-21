@@ -27,6 +27,29 @@ const getCategoryRules = catchAsync(async (req, res) => {
 });
 
 /**
+ * POST /discounts/brand
+ * Body: { brand, discount_type, value, status }
+ */
+const applyBrandDiscount = catchAsync(async (req, res) => {
+  const { brand, discount_type, value, status } = req.body;
+  const result = await discountService.applyBrandDiscount(req.storeId, {
+    brand,
+    discount_type,
+    value,
+    status,
+  });
+  sendSuccess(res, result, `Discount applied to ${result.affectedCount} product(s) for brand "${brand}".`, 201);
+});
+
+/**
+ * GET /discounts/brand
+ */
+const getBrandRules = catchAsync(async (req, res) => {
+  const rules = await discountService.getBrandRules(req.storeId);
+  sendSuccess(res, rules, 'Brand discount rules retrieved.');
+});
+
+/**
  * DELETE /discounts/:id
  */
 const deleteDiscountRule = catchAsync(async (req, res) => {
@@ -34,4 +57,4 @@ const deleteDiscountRule = catchAsync(async (req, res) => {
   sendSuccess(res, result, result.message);
 });
 
-module.exports = { applyCategoryDiscount, getCategoryRules, deleteDiscountRule };
+module.exports = { applyCategoryDiscount, getCategoryRules, applyBrandDiscount, getBrandRules, deleteDiscountRule };
