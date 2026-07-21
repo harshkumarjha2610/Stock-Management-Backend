@@ -14,5 +14,6 @@ router.use('/salary', require('./salary.routes'));
 router.use('/salaries', require('./salary.routes')); // Alias
 router.use('/attendance', require('./attendance.routes'));
 router.use('/stock-history', require('./stock-history.routes'));
+router.use('/discounts', require('./discount.routes'));
 
 module.exports = router;

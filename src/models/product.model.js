@@ -102,6 +102,18 @@ const Product = sequelize.define('Product', {
     type: DataTypes.TEXT,
     allowNull: true,
   },
+  discount_percent: {
+    type: DataTypes.DECIMAL(5, 2),
+    allowNull: true,
+    defaultValue: null,
+    comment: 'Applied discount percentage from a discount rule',
+  },
+  discounted_price: {
+    type: DataTypes.DECIMAL(12, 2),
+    allowNull: true,
+    defaultValue: null,
+    comment: 'Computed discounted selling price; null means no active discount',
+  },
 }, {
   tableName: 'products',
   indexes: [

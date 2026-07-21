@@ -10,8 +10,8 @@ const startServer = async () => {
     await sequelize.authenticate();
     console.log('✅ Sequelize database connection established successfully.');
 
-    // Sync models (alter: true adjusted tables, now stable)
-    await sequelize.sync();
+    // Sync models — alter:true adds new columns/tables without dropping data
+    await sequelize.sync({ alter: true });
     console.log('✅ Sequelize database models synchronized.');
 
     // Connect Prisma client

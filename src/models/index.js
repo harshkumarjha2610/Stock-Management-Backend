@@ -10,6 +10,7 @@ const Staff = require('./staff.model');
 const Attendance = require('./attendance.model');
 const SalaryPayment = require('./salaryPayment.model');
 const ProductSize = require('./productSize.model');
+const DiscountRule = require('./discountRule.model');
 
 
 // ──────────────────────────────────────────────
@@ -23,6 +24,8 @@ Store.hasMany(StockHistory, { foreignKey: 'store_id', as: 'stockHistory', onDele
 Store.hasMany(Staff, { foreignKey: 'store_id', as: 'staff', onDelete: 'CASCADE' });
 Store.hasMany(Attendance, { foreignKey: 'store_id', as: 'attendance', onDelete: 'CASCADE' });
 Store.hasMany(SalaryPayment, { foreignKey: 'store_id', as: 'salaryPayments', onDelete: 'CASCADE' });
+Store.hasMany(DiscountRule, { foreignKey: 'store_id', as: 'discountRules', onDelete: 'CASCADE' });
+
 
 // ──────────────────────────────────────────────
 // User Associations
@@ -102,4 +105,5 @@ module.exports = {
   Attendance,
   SalaryPayment,
   ProductSize,
+  DiscountRule,
 };
