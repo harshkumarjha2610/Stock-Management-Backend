@@ -1,0 +1,36 @@
+services:
+  - type: web
+    name: stock-management-backend
+    env: node
+    plan: free
+    buildCommand: npm install && npx prisma generate
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 5000
+      - key: DB_HOST
+        sync: false   # From Render PostgreSQL Info tab → Hostname
+      - key: DB_PORT
+        value: 5432
+      - key: DB_NAME
+        sync: false   # From Render PostgreSQL Info tab → Database
+      - key: DB_USER
+        sync: false   # From Render PostgreSQL Info tab → Username
+      - key: DB_PASSWORD
+        sync: false   # From Render PostgreSQL Info tab → Password
+      - key: DB_SSL
+        value: "true"
+      - key: JWT_SECRET
+        sync: false   # Set any long random string
+      - key: JWT_EXPIRES_IN
+        value: 7d
+      - key: SUPER_ADMIN_EMAIL
+        value: superadmin@stockms.com
+      - key: SUPER_ADMIN_PASSWORD
+        sync: false
+      - key: SUPER_ADMIN_NAME
+        value: Super Admin
+      - key: FRONTEND_URL
+        value: "*"
