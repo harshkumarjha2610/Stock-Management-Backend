@@ -11,7 +11,7 @@ const createProduct = async (data, storeId) => {
   const transaction = await sequelize.transaction();
   try {
     const { sizes, ...productData } = data;
-    
+
     // Calculate total stock if sizes are provided
     let totalStock = productData.stock_quantity || 0;
     if (sizes && Array.isArray(sizes)) {
@@ -141,7 +141,7 @@ const updateProduct = async (id, data, storeId) => {
     // If sizes are provided, update total stock
     if (sizes && Array.isArray(sizes)) {
       productData.stock_quantity = sizes.reduce((acc, s) => acc + (parseInt(s.quantity) || 0), 0);
-      
+
       const existingSizes = await ProductSize.findAll({ where: { product_id: id }, transaction });
       const existingSizesMap = {};
       existingSizes.forEach(s => {
