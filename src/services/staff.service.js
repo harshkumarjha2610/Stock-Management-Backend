@@ -17,10 +17,10 @@ const createStaff = async (data, storeId, creatorRole) => {
     email: data.email_id,
     phone: data.phone,
     password: data.password,
-      role: ROLES.STAFF,
-      store_id: storeId,
-    }, creatorRole);
-    userId = user.id;
+    role: ROLES.STAFF,
+    store_id: storeId,
+  }, creatorRole);
+  userId = user.id;
 
   const staff = await Staff.create({
     name: data.name,
@@ -54,8 +54,76 @@ const getStaffByUserId = async (userId, storeId) => {
   return staff;
 };
 
+// const updateStaff = async (id, data, storeId) => {
+//   const staff = await getStaffById(id, storeId);
+//   await staff.update({
+//     name: data.name,
+//     phone: data.phone,
+//     address: data.address,
+//     aadhar_card: data.aadhar_card,
+//     email_id: data.email_id,
+//     photo_url: data.photo_url,
+//     joining_date: data.joining_date,
+//     base_salary: data.base_salary,
+//     status: data.status ? data.status.toUpperCase() : staff.status,
+//   });
+//   return staff;
+// };
 const updateStaff = async (id, data, storeId) => {
   const staff = await getStaffById(id, storeId);
+
+  // Check if another staff already uses the same email
+  if (
+    data.email_id &&
+    data.email_id !== staff.email_id
+  ) {
+    const existingStaff = await Staff.findOne({
+      where: {
+        email_id: data.email_id,
+        store_id: storeId,
+        id: {
+          [Op.ne]: id,
+        },
+      },
+    });
+
+    if (existingStaff) {
+      throw new AppError(
+        "Another staff member already uses this email.",
+        409
+      );
+    }
+  }
+
+  // Update linked User account
+  if (staff.user_id) {
+    const user = await User.findByPk(staff.user_id);
+
+    if (user) {
+      if (data.name !== undefined) {
+        user.name = data.name;
+      }
+
+      if (data.phone !== undefined) {
+        user.phone = data.phone;
+      }
+
+      if (data.email_id !== undefined) {
+        user.email = data.email_id;
+      }
+
+      // Change password only if a new one is entered
+      if (
+        data.password &&
+        data.password.trim() !== ""
+      ) {
+        user.password_hash = data.password;
+      }
+
+      await user.save();
+    }
+  }
+
   await staff.update({
     name: data.name,
     phone: data.phone,
@@ -65,9 +133,12 @@ const updateStaff = async (id, data, storeId) => {
     photo_url: data.photo_url,
     joining_date: data.joining_date,
     base_salary: data.base_salary,
-    status: data.status ? data.status.toUpperCase() : staff.status,
+    status: data.status
+      ? data.status.toUpperCase()
+      : staff.status,
   });
-  return staff;
+
+  return staff.reload();
 };
 
 const deleteStaff = async (id, storeId) => {
@@ -171,10 +242,10 @@ const getAllAttendance = async (storeId, query = {}) => {
     if (query.from) where.date[Op.gte] = query.from;
     if (query.to) where.date[Op.lte] = query.to;
   }
-  return Attendance.findAll({ 
-    where, 
+  return Attendance.findAll({
+    where,
     include: [{ association: 'staff', attributes: ['name'] }],
-    order: [['date', 'DESC']] 
+    order: [['date', 'DESC']]
   });
 };
 
@@ -183,7 +254,7 @@ const getAllAttendance = async (storeId, query = {}) => {
  */
 const markAttendance = async (data, storeId) => {
   const { staff_id, date, status } = data;
-  
+
   // Check if record exists for this date
   const existing = await Attendance.findOne({
     where: { staff_id, date, store_id: storeId }
