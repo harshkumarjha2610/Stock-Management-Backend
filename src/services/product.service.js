@@ -294,69 +294,6 @@ const updateProduct = async (id, data, storeId) => {
     throw err;
   }
 };
-/**
- * Get unique dropdown values from existing products.
- */
-const getDropdownValues = async (storeId) => {
-  const products = await Product.findAll({
-    where: {
-      store_id: storeId,
-    },
-    attributes: [
-      "name",
-      "category",
-      "brand",
-      "fabric",
-      "color",
-      "gender",
-      "invoice_number",
-      "purchase_date",
-    ],
-    raw: true,
-  });
-
-  const unique = (key) => [
-    ...new Set(
-      products
-        .map((p) =>
-          typeof p[key] === "string"
-            ? p[key].trim()
-            : p[key]
-        )
-        .filter(
-          (v) =>
-            v !== null &&
-            v !== undefined &&
-            String(v).trim() !== ""
-        )
-    ),
-  ].sort();
-
-  return {
-    names: unique("name"),
-    categories: unique("category"),
-    brands: unique("brand"),
-    fabrics: unique("fabric"),
-    colors: unique("color"),
-    genders: unique("gender"),
-    invoiceNumbers: unique("invoice_number"),
-    purchaseDates: [
-      ...new Set(
-        products
-          .map((p) =>
-            p.purchase_date
-              ? new Date(p.purchase_date)
-                .toISOString()
-                .split("T")[0]
-              : null
-          )
-          .filter(Boolean)
-      ),
-    ].sort(),
-  };
-
-
-};
 
 /**
  * Delete a product within a store.
@@ -375,7 +312,6 @@ module.exports = {
   createProduct,
   getProducts,
   getProductById,
-  getDropdownValues,
   updateProduct,
   deleteProduct,
 };
