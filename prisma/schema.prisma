@@ -120,35 +120,51 @@ model User {
 }
 
 model Product {
-  id              Int             @id @default(autoincrement())
-  store_id        Int             @db.Integer
-  store           Store           @relation(fields: [store_id], references: [id])
-  name            String          @db.VarChar(200)
-  barcode         String?         @db.VarChar(100)
-  sku             String?         @db.VarChar(100)
-  brand           String?         @db.VarChar(100)
-  category        String?         @db.VarChar(100)
-  buying_price    Decimal         @default(0) @db.Decimal(12, 2)
-  selling_price   Decimal         @default(0) @db.Decimal(12, 2)
-  gst_percent     Decimal         @default(0) @db.Decimal(5, 2)
-  stock_quantity  Int             @default(0)
-  min_stock_level Int             @default(5)
-  status          StockStatus     @default(ACTIVE)
+  id                Int             @id @default(autoincrement())
+  store_id          Int             @db.Integer
+  store             Store           @relation(fields: [store_id], references: [id])
+
+  name              String          @db.VarChar(200)
+  barcode           String?         @db.VarChar(100)
+  sku               String?         @db.VarChar(100)
+  brand             String?         @db.VarChar(100)
+  category          String?         @db.VarChar(100)
+
+  buying_price      Decimal         @default(0) @db.Decimal(12, 2)
+  selling_price     Decimal         @default(0) @db.Decimal(12, 2)
+  gst_percent       Decimal         @default(0) @db.Decimal(5, 2)
+
+  stock_quantity    Int             @default(0)
+  min_stock_level   Int             @default(5)
+
+  status            StockStatus     @default(ACTIVE)
+
   barcode_image_url String?
-  fabric          String?         @db.VarChar(100)
-  color           String?         @db.VarChar(100)
-  gender          String?         @db.VarChar(50)
-  image_url       String?
-  unit            String?         @db.VarChar(50)
-  hsn_code        String?         @db.VarChar(50)
-  expiry_date     DateTime?       @db.Date
-  mfg_date        DateTime?       @db.Date
-  description     String?
-  created_at      DateTime        @default(now()) @map("created_at")
-  updated_at      DateTime        @updatedAt @map("updated_at")
-  stockHistory    StockHistory[]
-  billItems       BillItem[]
-  sizes           ProductSize[]
+
+  fabric            String?         @db.VarChar(100)
+  color             String?         @db.VarChar(100)
+  gender            String?         @db.VarChar(50)
+
+  image_url         String?
+
+  unit              String?         @db.VarChar(50)
+  hsn_code          String?         @db.VarChar(50)
+
+  expiry_date       DateTime?       @db.Date
+  mfg_date          DateTime?       @db.Date
+
+  // Purchase Details
+  invoice_number    String?         @db.VarChar(100)
+  purchase_date     DateTime?       @db.Date
+
+  description       String?
+
+  created_at        DateTime        @default(now()) @map("created_at")
+  updated_at        DateTime        @updatedAt @map("updated_at")
+
+  stockHistory      StockHistory[]
+  billItems         BillItem[]
+  sizes             ProductSize[]
 
   @@unique([store_id, barcode], map: "products_store_barcode_unique")
   @@unique([store_id, sku], map: "products_store_sku_unique")

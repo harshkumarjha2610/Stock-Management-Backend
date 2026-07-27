@@ -17,14 +17,36 @@ const getProductById = catchAsync(async (req, res) => {
   sendSuccess(res, product, 'Product retrieved successfully.');
 });
 
+// ===============================
+// NEW CONTROLLER
+// ===============================
+const getDropdownValues = catchAsync(async (req, res) => {
+  const values = await productService.getDropdownValues(req.storeId);
+  sendSuccess(res, values, 'Dropdown values retrieved successfully.');
+});
+
 const updateProduct = catchAsync(async (req, res) => {
-  const product = await productService.updateProduct(req.params.id, req.body, req.storeId);
+  const product = await productService.updateProduct(
+    req.params.id,
+    req.body,
+    req.storeId
+  );
   sendSuccess(res, product, 'Product updated successfully.');
 });
 
 const deleteProduct = catchAsync(async (req, res) => {
-  const result = await productService.deleteProduct(req.params.id, req.storeId);
+  const result = await productService.deleteProduct(
+    req.params.id,
+    req.storeId
+  );
   sendSuccess(res, result, 'Product deleted successfully.');
 });
 
-module.exports = { createProduct, getProducts, getProductById, updateProduct, deleteProduct };
+module.exports = {
+  createProduct,
+  getProducts,
+  getProductById,
+  getDropdownValues,
+  updateProduct,
+  deleteProduct,
+};
